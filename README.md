@@ -3,4 +3,4 @@ Welcome to the official website of Rainier Pearson Saputra, a space where I shar
 
 ## Usage
 
-Check out this site live at: [Live Site](https://rainier-ps.github.io/Personal-Website/)!
+Check out this site live at: [Live Site](https://rainier-ps.github.io/)!
