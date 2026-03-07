@@ -1,5 +1,5 @@
 # Personal-Website
-Welcome to the official website of Rainier Pearson Saputra, a space where I share my work, ideas, and personal journey in a creative and professional way.
+Welcome to the official website of Rainier Pearson Saputra, a space where I share my work, ideas, and personal journey.
 
 ## Usage
 
