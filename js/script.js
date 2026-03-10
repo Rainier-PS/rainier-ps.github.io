@@ -84,7 +84,7 @@ const DATA = {
 async function loadProjectsFromJSON() {
   try {
     const res = await fetch(
-      'https://raw.githubusercontent.com/Rainier-PS/Personal-Website/main/data/projects.json'
+      'https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/projects.json'
     );
     if (!res.ok) throw new Error('Failed to load projects.json');
     return await res.json();
@@ -97,7 +97,7 @@ async function loadProjectsFromJSON() {
 async function loadAwardsFromJSON() {
   try {
     const res = await fetch(
-      'https://raw.githubusercontent.com/Rainier-PS/Personal-Website/main/data/awards.json'
+      'https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/awards.json'
     );
     if (!res.ok) throw new Error('Failed to load awards.json');
     return await res.json();
@@ -223,7 +223,7 @@ function initCarousels() {
       dotsContainer.appendChild(dot);
     });
 
-    addSwipeSupport(carousel); // SAFE now
+    addSwipeSupport(carousel);
   });
 }
 
@@ -390,9 +390,9 @@ const STATIC_DATA = {
   contact: [
     { platform: "GitHub", link: "https://github.com/Rainier-PS" },
     { platform: "Email", link: "mailto:rainierps8@gmail.com" },
-    { platform: "Instagram", link: "https://instagram.com/rainierps8" },
+    { platform: "Instagram", link: "https://instagram.com/rainier_ps" },
     { platform: "Instructables", link: "https://www.instructables.com/member/Rainier-PS/" },
-    { platform: "LinkedIn", link: "https://www.linkedin.com/in/YOUR_LINKEDIN_USERNAME" },
+    { platform: "LinkedIn", link: "https://www.linkedin.com/in/LINKEDIN_USERNAME" },
     { platform: "Semarang, Indonesia", link: "https://www.google.com/maps/place/Semarang,+Indonesia" }
   ]
 };
@@ -577,7 +577,7 @@ async function loadPublications() {
   if (!grid) return;
 
   try {
-    const res = await fetch('https://raw.githubusercontent.com/Rainier-PS/Personal-Website/refs/heads/main/data/publications.json');
+    const res = await fetch('https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/publications.json');
     if (!res.ok) throw new Error('Failed to load publications');
     const publications = await res.json();
 
