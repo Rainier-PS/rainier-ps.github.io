@@ -22,7 +22,7 @@
 
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = "https://raw.githubusercontent.com/Rainier-PS/Personal-Website/main/images/site/Rainier%20Pearson%20Saputra-Avatar.svg";
+    img.src = "https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Avatar.svg";
 
     let sourceData = null;
     let baseImageCanvas = document.createElement("canvas");
@@ -239,3 +239,4 @@
     });
 
 })();
+
