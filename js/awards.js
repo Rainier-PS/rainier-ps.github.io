@@ -13,7 +13,7 @@ async function loadAwards() {
             if (!res.ok) throw new Error('Local fetch failed');
         } catch (e) {
             console.warn('Local fetch failed, trying remote...', e);
-            res = await fetch('https://raw.githubusercontent.com/Rainier-PS/Personal-Website/main/data/awards.json');
+            res = await fetch('https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/awards.json');
         }
 
         if (!res.ok) throw new Error('Failed to load awards');
@@ -78,3 +78,4 @@ function initLightbox() {
         });
     }
 }
+
