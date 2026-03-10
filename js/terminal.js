@@ -285,7 +285,7 @@ const commands = {
 
     // Secret Commands
     repo: () => {
-        window.open('https://github.com/Rainier-PS/Personal-Website', '_blank');
+        window.open('https://github.com/Rainier-PS/rainier-ps.github.io', '_blank');
         return 'Opening GitHub repository...';
     },
 
@@ -337,7 +337,7 @@ const commands = {
 
         if (!map[file]) return `File not found: ${file}`;
 
-        const baseUrl = 'https://raw.githubusercontent.com/Rainier-PS/Personal-Website/refs/heads/main/';
+        const baseUrl = 'https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/';
         const url = baseUrl + map[file];
 
         window.open(url, '_blank');
@@ -597,3 +597,4 @@ function contactTable() {
     typeHTML(container.outerHTML, 10);
     autoScroll();
 }
+
