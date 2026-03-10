@@ -13,7 +13,7 @@ async function loadProjects() {
             if (!res.ok) throw new Error('Local fetch failed');
         } catch (e) {
             console.warn('Local fetch failed, trying remote...', e);
-            res = await fetch('https://raw.githubusercontent.com/Rainier-PS/Personal-Website/main/data/projects.json');
+            res = await fetch('https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/projects.json');
         }
 
         if (!res.ok) throw new Error('Failed to load projects');
