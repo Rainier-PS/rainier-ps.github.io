@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="transition-colors duration-300">
+<html lang="en" data-theme="dark" class="transition-colors duration-300">
 
 <head>
   <meta charset="UTF-8" />
@@ -23,12 +23,9 @@
     href="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Favicon.svg"
     type="image/svg+xml" />
   <link rel="icon" href="favicon.ico" sizes="any" />
-  <link rel="apple-touch-icon"
-    href="/images/site/apple-touch-icon.png" />
-  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
-  <meta name="theme-color" content="#f8f9fa" media="(prefers-color-scheme: light)" />
-
-  <script src="https://unpkg.com/lucide@0.562.0" defer></script>
+  <link rel="apple-touch-icon" href="/images/site/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0a0a0d" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f4f4f8" media="(prefers-color-scheme: light)" />
 
   <meta name="keywords" content="Rainier Pearson Saputra, portfolio, projects, engineering student, tech enthusiast" />
   <meta name="robots" content="index, follow" />
@@ -40,6 +37,8 @@
   <meta name="twitter:image"
     content="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Avatar.jpg" />
 
+  <meta name="google-site-verification" content="KclOAJlsOojPDo-nzZw4U5gCyo-2dL3ZP09HrbI7NYk" />
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -48,290 +47,521 @@
     "url": "https://rainier-ps.github.io/",
     "image": "https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Avatar.jpg",
     "description": "Student, aspiring engineer, and tech enthusiast.",
-    "sameAs": [
-      "https://github.com/Rainier-PS"
-    ],
+    "sameAs": ["https://github.com/Rainier-PS"],
     "jobTitle": "Student",
-    "knowsAbout": [
-      "Engineering",
-      "Programming",
-      "Electronics",
-      "Robotics",
-      "STEM Education",
-      "Artificial Intelligence",
-      "Sustainable Technology",
-      "Science Competitions"
-    ]
+    "knowsAbout": ["Engineering","Programming","Electronics","Robotics","STEM Education","Artificial Intelligence","Sustainable Technology","Science Competitions"]
   }
   </script>
 
-  <meta name="google-site-verification" content="KclOAJlsOojPDo-nzZw4U5gCyo-2dL3ZP09HrbI7NYk" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.562.0" defer></script>
 
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/labs.css">
 </head>
 
 <body id="top">
+
+  <div class="gradient-bg" aria-hidden="true">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+  </div>
+
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
+  <div id="cursor" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
 
-  <header id="header">
-    <div class="brand">
+  <div class="custom-scrollbar" aria-hidden="true">
+    <div class="custom-scrollbar-thumb"></div>
+  </div>
+
+  <nav id="navbar" role="navigation" aria-label="Main navigation" data-mobile="true">
+    <div class="nav-inner">
       <a href="terminal.html" aria-label="Open Terminal">
-        <img class="logo logo-light"
-          src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Reversed.svg"
-          alt="Rainier logo Reversed" />
         <img class="logo logo-dark"
           src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Primary.svg"
-          alt="Rainier Logo Primary">
+          alt="Rainier Logo" />
+        <img class="logo logo-light"
+          src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Reversed.svg"
+          alt="Rainier Logo" />
       </a>
-      <h1>Rainier P. S.</h1>
-    </div>
-
-    <button id="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-      <i data-lucide="menu"></i>
-    </button>
-
-    <nav id="nav-links" aria-label="Primary">
-      <a href="#about">ABOUT</a>
-      <a href="#experience-education">EXPERIENCE &amp; EDUCATION</a>
-      <a href="#skills">SKILLS</a>
-      <a href="projects.html">PROJECTS</a>
-      <a href="publications.html">PUBLICATIONS</a>
-      <a href="awards.html">AWARDS</a>
-      <a href="labs.html">LABS</a>
-      <a href="#contact">CONTACT</a>
-      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-        <i data-lucide="moon"></i>
-      </button>
-    </nav>
-  </header>
-
-  <main id="main-content" tabindex="-1">
-    <section class="hero">
-      <div class="flip-card">
-        <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <img
-              src="/images/site/Rainier%20Pearson%20Saputra-Avatar.svg"
-              alt="Profile" />
-          </div>
-          <div class="flip-card-back logo-light">
-            <img
-              src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Reversed.svg"
-              alt="Logo Light" />
-          </div>
-          <div class="flip-card-back logo-dark">
-            <img
-              src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Primary.svg"
-              alt="Logo Dark" />
-          </div>
-        </div>
-      </div>
-      <h2>Rainier Pearson Saputra</h2>
-      <p id="tagline"></p>
-
-      <div class="hero-actions">
-        <button class="btn-disabled" disabled aria-disabled="true" title="Resume coming soon">
-          Download Resume (Coming Soon)
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about">About</a></li>
+        <li><a href="#open-source">Activity</a></li>
+        <li><a href="#experience-education">Experience</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="publications.html">Publications</a></li>
+        <li><a href="awards.html">Awards</a></li>
+        <li><a href="labs.html">Labs</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+        </button>
+        <button class="nav-menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
         </button>
       </div>
-    </section>
+    </div>
+  </nav>
 
-    <section id="about">
-      <h2>About Me</h2>
-      <p>I'm a high school student passionate about technology, science, and innovation. I enjoy creating projects that
-        solve real-world problems while constantly exploring new ideas and learning new skills, whether through STEM
-        competitions or personal projects. Feel free to check out <a href="projects.html" class="projects-link">my
-          projects</a> below!</p>
-    </section>
+  <main id="main-content" tabindex="-1">
 
-    <section id="open-source">
-      <h2>Open Source Activity</h2>
-      <p class="section-intro" style="margin-bottom: 1.5rem;">
-        I enjoy building consistently and contributing to personal and open-source projects.
-        Below is a snapshot of my GitHub activity over the past year.
-      </p>
-
-      <div class="contributions">
-        <select id="yearSelect" class="year-select" aria-label="Select contribution year">
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-          <option value="2024">2024</option>
-        </select>
-
-        <div class="summary" id="summary">Loading…</div>
-
-        <div class="layout">
-          <div class="graph-wrapper">
-            <div class="months" id="months"></div>
-
-            <div class="graph">
-              <div class="days">
-                <span>Mon</span>
-                <span></span>
-                <span>Wed</span>
-                <span></span>
-                <span>Fri</span>
-                <span></span>
-                <span></span>
-              </div>
-
-              <div class="calendar" id="calendar"></div>
+    <section id="hero" aria-labelledby="heroTitle">
+      <div class="hero-inner container">
+        <div class="hero-content-wrap">
+          <div class="hero-text-col">
+            <p class="hero-label" id="heroLabel"><span class="hero-label-title">High School Student</span><span
+                class="hero-label-separator"> &nbsp;·&nbsp; </span><span class="hero-label-sub">Semarang,
+                Indonesia</span></p>
+            <h1 class="hero-title" id="heroTitle">Rainier<br><span class="hero-title-dim">Pearson Saputra</span></h1>
+            <div class="hero-sub-wrap" id="heroSubWrap">
+              <p class="hero-subtitle" id="heroSubtitle"></p>
+            </div>
+            <p class="hero-body" id="heroBody">
+              Aspiring engineer passionate about technology, science, and innovation, building projects that solve
+              real-world problems.
+            </p>
+            <div class="hero-links" id="heroLinks">
+              <button class="cta-btn btn-disabled" disabled aria-disabled="true" title="Resume coming soon">
+                <span>Resume (Coming Soon)</span>
+              </button>
+              <a class="cta-btn desktop-hidden" href="#about">
+                <span>Explore</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </a>
             </div>
           </div>
 
-          <div class="years" id="yearButtons"></div>
-        </div>
-      </div>
-      <div class="tooltip" id="tooltip"></div>
-
-      <div class="centered" style="margin-top: 1.5rem;">
-        <a href="labs.html" class="btn">View All Labs <i data-lucide="flask-conical"></i></a>
-      </div>
-    </section>
-
-    <section id="experience-education">
-      <div class="split-section">
-        <section id="experience">
-          <h2>Experience</h2>
-          <ul>
-            <li>Garuda Hacks 7.0 Volunteer</li>
-            <li><a href="https://hackclub.com" target="_blank" rel="noopener">Hack Club</a> Member</li>
-            <li>Club Leader <a href="https://hackclubbss.github.io"
-                target="_blank" rel="noopener">Hack Club Binus School Semarang</a></li>
-            <li>Hack the Hat Elective Member (Raspberry Pi & Sense HAT)</li>
-            <li>STEM Club Member</li>
-            <li>Digital Journalism Elective Member</li>
-            <li>RevoU SECC - Coding Camp</li>
-          </ul>
-        </section>
-
-        <section id="education">
-          <h2>Education</h2>
-          <p>Binus School Semarang — High School (2024–Present)</p>
-          <p>Daniel Creative School — Junior High School (2021–2024)</p>
-          <p>Daniel Creative School — Elementary (2015–2021)</p>
-        </section>
-      </div>
-    </section>
-
-    <section id="skills">
-      <h2>Skills</h2>
-      <div class="cards">
-        <div class="card">
-          <i data-lucide="atom" class="icon-lg"></i>
-          <h3>Maths &amp; Science</h3>
-          <p>I have strong knowledge in mathematics and science, which I apply to problem-solving, experiments,
-            research,
-            and technical projects.</p>
-        </div>
-        <div class="card">
-          <i data-lucide="layers" class="icon-lg"></i>
-          <h3>3D Printing &amp; PCB Design</h3>
-          <p>I design and assemble mechanical and electronic projects using <strong>Fusion 360</strong> for 3D modeling
-            and <strong>KiCad</strong> for PCB design, with hands-on experience in soldering and assembling custom
-            electronics.</p>
-        </div>
-        <div class="card">
-          <i data-lucide="code" class="icon-lg"></i>
-          <h3>Programming</h3>
-          <p>
-            I have experience in programming languages such as
-            <strong>Python</strong>,
-            <strong>JavaScript (ES6+)</strong>,
-            <strong>SQL (basic)</strong>, and
-            <strong>Arduino (C/C++)</strong>,
-            as well as web technologies including
-            <strong>HTML</strong> and
-            <strong>CSS</strong>.
-          </p>
-        </div>
-        <div class="card">
-          <i data-lucide="languages" class="icon-lg"></i>
-          <h3>Languages</h3>
-          <ul class="list-left">
-            <li>English (Fluent)</li>
-            <li>Chinese (Learning)</li>
-            <li>German (Learning)</li>
-            <li>Indonesian (Native)</li>
-          </ul>
+          <div class="hero-avatar-col">
+            <div class="flip-card" aria-label="Profile photo">
+              <div class="flip-card-inner">
+                <div class="flip-card-front">
+                  <img
+                    src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Avatar.svg"
+                    alt="Rainier Pearson Saputra" />
+                </div>
+                <div class="flip-card-back logo-dark-back">
+                  <img
+                    src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Primary.svg"
+                    alt="Rainier Logo" />
+                </div>
+                <div class="flip-card-back logo-light-back">
+                  <img
+                    src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Reversed.svg"
+                    alt="Rainier Logo" />
+                </div>
+              </div>
+            </div>
+            <a class="cta-btn mobile-hidden" href="#about">
+              <span>Explore</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="projects">
-      <h2>Projects</h2>
+    <div class="marquee-section" aria-hidden="true">
+      <div class="marquee-track" id="marqueeA"></div>
+      <div class="marquee-track" id="marqueeB"></div>
+    </div>
 
-      <div class="carousel" data-carousel aria-label="Projects carousel">
-        <div class="carousel-track" id="projects-grid" aria-live="polite"></div>
-
-        <div class="carousel-dots" aria-label="Project slide pagination"></div>
-      </div>
-
-      <div class="centered" style="margin-top: 1.5rem;">
-        <a href="projects.html" class="btn">View All Projects <i data-lucide="arrow-right"></i></a>
-      </div>
-    </section>
-
-    <section id="awards">
-      <h2>Awards</h2>
-
-      <div class="carousel" data-carousel aria-label="Awards carousel">
-        <div class="carousel-track" id="awards-grid" aria-live="polite"></div>
-
-        <div class="carousel-dots" aria-label="Award slide pagination"></div>
-      </div>
-
-      <div class="centered" style="margin-top: 1.5rem;">
-        <a href="awards.html" class="btn">View All Awards <i data-lucide="arrow-right"></i></a>
+    <section id="about" aria-labelledby="aboutHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Who I Am</p>
+          <h2 class="section-title" id="aboutHeading">About Me</h2>
+          <p class="section-sub">Student, builder, and relentless learner</p>
+        </div>
+        <div class="about-card reveal">
+          <p>I'm a high school student passionate about technology, science, and innovation. I enjoy creating projects
+            that solve real-world problems while constantly exploring new ideas and learning new skills, whether through
+            STEM competitions or personal projects. Feel free to check out <a href="projects.html"
+              class="inline-link">my projects</a>!</p>
+        </div>
       </div>
     </section>
 
-    <section id="contact">
-      <h2>Contact</h2>
-      <p>Let’s connect! You can reach me through the links below: </p>
-      <div class="contact-links">
-        <a href="https://github.com/Rainier-PS" target="_blank" rel="noopener"><i data-lucide="github"></i>GitHub</a>
-        <a id="email-link"><i data-lucide="mail"></i>Email</a>
-        <a href="https://instagram.com/rainier_ps" target="_blank" rel="noopener"><i
-            data-lucide="instagram"></i>Instagram</a>
-        <a href="https://www.instructables.com/member/Rainier-PS/" target="_blank" rel="noopener"><i
-            data-lucide="lightbulb"></i>Instructables</a>
-        <!--
-        <a href="https://www.linkedin.com/in/LINKEDIN_USERNAME" target="_blank" rel="noopener"><i
-            data-lucide="linkedin"></i>LinkedIn</a>
-        -->
-        <a href="https://www.google.com/maps/place/Semarang,+Indonesia" target="_blank" rel="noopener"><i
-            data-lucide="map-pin"></i>Semarang, Indonesia</a>
-      </div>
+    <section id="open-source" aria-labelledby="activityHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Open Source</p>
+          <h2 class="section-title" id="activityHeading">GitHub Activity</h2>
+          <p class="section-sub">A snapshot of my contributions over the past year</p>
+        </div>
 
-      <div class="back-to-top-wrapper">
-        <button class="back-to-top" id="backToTop">Back to Top</button>
+        <div class="contributions-wrap reveal">
+          <div class="contributions-header">
+            <div class="summary" id="summary">Loading…</div>
+            <select id="yearSelect" class="year-select" aria-label="Select contribution year">
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+
+          <div class="graph-layout">
+            <div class="days-col">
+              <span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span></span>
+            </div>
+            <div class="graph-col">
+              <div class="months" id="months"></div>
+              <div class="calendar" id="calendar"></div>
+            </div>
+            <div class="years-col" id="yearButtons"></div>
+          </div>
+        </div>
+
+        <div class="tooltip" id="tooltip"></div>
+
+        <div class="section-cta reveal">
+          <a href="labs.html" class="cta-btn">
+            <span>View All Labs</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M6 3h12" />
+              <path d="M9 3v6L4 18a2 2 0 0 0 1.7 3h12.6A2 2 0 0 0 20 18L15 9V3" />
+              <path d="M6 14h12" />
+            </svg>
+          </a>
+        </div>
       </div>
     </section>
+
+    <section id="experience-education" aria-labelledby="expEduHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Background</p>
+          <h2 class="section-title" id="expEduHeading">Experience &amp; Education</h2>
+          <p class="section-sub">Where I've been and what I've done</p>
+        </div>
+        <div class="exp-edu-grid stagger">
+          <div class="exp-edu-card">
+            <div class="exp-edu-card-header">
+              <span class="exp-edu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+              </span>
+              <h3>Experience</h3>
+            </div>
+            <ul class="exp-list">
+              <li><span class="exp-dot"></span><span>Garuda Hacks 7.0 Volunteer</span></li>
+              <li><span class="exp-dot"></span><span><a href="https://hackclub.com" target="_blank" rel="noopener"
+                    class="inline-link">Hack Club</a> Member</span></li>
+              <li><span class="exp-dot"></span><span>Club Leader — <a href="https://hackclubbss.github.io"
+                    target="_blank" rel="noopener" class="inline-link">Hack Club Binus School Semarang</a></span></li>
+              <li><span class="exp-dot"></span><span>Hack the Hat Elective Member (Raspberry Pi &amp; Sense HAT)</span>
+              </li>
+              <li><span class="exp-dot"></span><span>STEM Club Member</span></li>
+              <li><span class="exp-dot"></span><span>Digital Journalism Elective Member</span></li>
+              <li><span class="exp-dot"></span><span>RevoU SECC — Coding Camp</span></li>
+            </ul>
+          </div>
+          <div class="exp-edu-card">
+            <div class="exp-edu-card-header">
+              <span class="exp-edu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                  <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+              </span>
+              <h3>Education</h3>
+            </div>
+            <ul class="edu-list">
+              <li>
+                <div class="edu-item">
+                  <div class="edu-details">
+                    <span class="edu-school">Binus School Semarang</span>
+                    <span class="edu-level">High School</span>
+                  </div>
+                  <span class="edu-year">2024 – Present</span>
+                </div>
+              </li>
+              <li>
+                <div class="edu-item">
+                  <div class="edu-details">
+                    <span class="edu-school">Daniel Creative School</span>
+                    <span class="edu-level">Junior High School</span>
+                  </div>
+                  <span class="edu-year">2021 – 2024</span>
+                </div>
+              </li>
+              <li>
+                <div class="edu-item">
+                  <div class="edu-details">
+                    <span class="edu-school">Daniel Creative School</span>
+                    <span class="edu-level">Elementary</span>
+                  </div>
+                  <span class="edu-year">2015 – 2021</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="skills" aria-labelledby="skillsHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">What I Know</p>
+          <h2 class="section-title" id="skillsHeading">Skills</h2>
+          <p class="section-sub">Tools, languages, and domains I work in</p>
+        </div>
+        <div class="skills-grid stagger">
+          <div class="skill-card">
+            <div class="skill-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                <path d="M2 12h20" />
+              </svg>
+            </div>
+            <h3>Maths &amp; Science</h3>
+            <p>Strong foundation in mathematics and science applied to problem-solving, experiments, research, and
+              technical projects.</p>
+          </div>
+          <div class="skill-card">
+            <div class="skill-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path
+                  d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </div>
+            <h3>3D Printing &amp; PCB Design</h3>
+            <p>Designing and assembling projects using <strong>Fusion 360</strong> for 3D modeling and
+              <strong>KiCad</strong> for PCB design, with hands-on soldering experience.
+            </p>
+          </div>
+          <div class="skill-card">
+            <div class="skill-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+            </div>
+            <h3>Programming</h3>
+            <p><strong>Python</strong>, <strong>JavaScript (ES6+)</strong>, <strong>SQL</strong>, <strong>Arduino
+                (C/C++)</strong>, <strong>HTML</strong>, and <strong>CSS</strong> — from scripting to web to embedded.
+            </p>
+          </div>
+          <div class="skill-card">
+            <div class="skill-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M5 8l6 6" />
+                <path d="M4 14l6-6 2-3" />
+                <path d="M2 5h12" />
+                <path d="M7 2h1" />
+                <path d="M22 22l-5-10-5 10" />
+                <path d="M14 18h6" />
+              </svg>
+            </div>
+            <h3>Languages</h3>
+            <ul class="lang-list">
+              <li>English (Fluent)</li>
+              <li>Chinese (Learning)</li>
+              <li>German (Learning)</li>
+              <li>Indonesian (Native)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" aria-labelledby="projectsHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">What I Build</p>
+          <h2 class="section-title" id="projectsHeading">Projects</h2>
+          <p class="section-sub">A selection of things I've made</p>
+        </div>
+
+        <div class="carousel" data-carousel aria-label="Projects carousel">
+          <div class="carousel-track" id="projects-grid" aria-live="polite"></div>
+          <div class="carousel-dots-outer">
+            <div class="carousel-dots" aria-label="Project slide pagination"></div>
+          </div>
+        </div>
+
+        <div class="section-cta reveal">
+          <a href="projects.html" class="cta-btn">
+            <span>View All Projects</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="awards" aria-labelledby="awardsHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Recognition</p>
+          <h2 class="section-title" id="awardsHeading">Awards</h2>
+          <p class="section-sub">Competitions and achievements I'm proud of</p>
+        </div>
+
+        <div class="carousel" data-carousel aria-label="Awards carousel">
+          <div class="carousel-track" id="awards-grid" aria-live="polite"></div>
+          <div class="carousel-dots-outer">
+            <div class="carousel-dots" aria-label="Award slide pagination"></div>
+          </div>
+        </div>
+
+        <div class="section-cta reveal">
+          <a href="awards.html" class="cta-btn">
+            <span>View All Awards</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" aria-labelledby="contactHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Get In Touch</p>
+          <h2 class="section-title" id="contactHeading">Contact</h2>
+          <p class="section-sub">Let's connect — reach me through any of the links below</p>
+        </div>
+
+        <div class="contact-grid reveal">
+          <a href="https://github.com/Rainier-PS" target="_blank" rel="noopener" class="contact-card">
+            <span class="contact-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                <path
+                  d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+              </svg></span>
+            <span class="contact-card-label">GitHub</span>
+          </a>
+          <a id="email-link" class="contact-card">
+            <span class="contact-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg></span>
+            <span class="contact-card-label">Email</span>
+          </a>
+          <a href="https://instagram.com/rainier_ps" target="_blank" rel="noopener" class="contact-card">
+            <span class="contact-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg></span>
+            <span class="contact-card-label">Instagram</span>
+          </a>
+          <a href="https://www.instructables.com/member/Rainier-PS/" target="_blank" rel="noopener"
+            class="contact-card">
+            <span class="contact-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                <path
+                  d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+                <path d="M9 18h6" />
+                <path d="M10 22h4" />
+              </svg></span>
+            <span class="contact-card-label">Instructables</span>
+          </a>
+          <a href="https://www.google.com/maps/place/Semarang,+Indonesia" target="_blank" rel="noopener"
+            class="contact-card">
+            <span class="contact-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg></span>
+            <span class="contact-card-label">Semarang, Indonesia</span>
+          </a>
+        </div>
+
+        <div class="back-to-top-wrap reveal">
+          <button class="cta-btn back-to-top" id="backToTop">
+            <span>Back to Top</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-
-
-  <footer>
-    <div class="links">
-      <p><strong>Quick Links</strong></p>
-      <a href="#about">About</a>
-      <a href="#experience-education">Experience &amp; Education</a>
-      <a href="#skills">Skills</a>
-      <a href="projects.html">Projects</a>
-      <a href="publications.html">Publications</a>
-      <a href="awards.html">Awards</a>
-      <a href="labs.html">Labs</a>
-      <a href="#contact">Contact</a>
+  <footer role="contentinfo">
+    <div class="footer-inner container">
+      <div class="footer-links-col">
+        <p class="footer-heading">Quick Links</p>
+        <nav class="footer-links" aria-label="Footer links">
+          <a href="#about">About</a>
+          <a href="#experience-education">Experience &amp; Education</a>
+          <a href="#skills">Skills</a>
+          <a href="projects.html">Projects</a>
+          <a href="publications.html">Publications</a>
+          <a href="awards.html">Awards</a>
+          <a href="labs.html">Labs</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+      <p class="footer-copy">© <span id="copyright-year"></span> Rainier Pearson Saputra<span
+          class="footer-sep-dot">.</span><span class="footer-sep-bar"> | </span><span class="footer-rights">All rights
+          reserved.</span></p>
     </div>
-    <p>© <span id="copyright-year"></span> Rainier Pearson Saputra | All rights reserved.</p>
   </footer>
 
   <div id="imageLightbox" class="image-lightbox">
     <div class="image-lightbox-content">
-      <img id="lightboxImg" src="" alt="Certificate preview">
+      <img id="lightboxImg" src="" alt="Preview">
       <div class="image-lightbox-buttons">
         <button id="closeLightbox">Close</button>
         <button id="openInNewTab">Open in New Tab</button>
@@ -340,7 +570,6 @@
   </div>
 
   <script src="js/script.js" defer></script>
-  <script src="js/labs.js" defer></script>
 </body>
 
 </html>
