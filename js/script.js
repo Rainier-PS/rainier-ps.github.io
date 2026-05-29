@@ -1,403 +1,544 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  if (window.lucide) lucide.createIcons();
+'use strict';
 
-  initCopyrightYear();
+const MARQUEE_WORDS = [
+  'Engineering', 'Python', '3D Printing', 'Arduino', 'JavaScript',
+  'PCB Design', 'Robotics', 'STEM', 'Hack Club', 'KiCad', 'Fusion 360'
+];
 
-  document.querySelectorAll('link[rel="preload"][as="style"]').forEach(link => {
-    function enableStylesheet() {
-      try { link.rel = 'stylesheet'; } catch (e) { }
-    }
-    link.addEventListener('load', enableStylesheet);
-    if (link.sheet) enableStylesheet();
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+gsap.defaults({ overwrite: 'auto', force3D: true });
+ScrollTrigger.config({ ignoreMobileResize: true, autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load' });
+
+const $html = document.documentElement;
+const $themeToggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+$html.setAttribute('data-theme', savedTheme);
+
+$themeToggle.addEventListener('click', (e) => {
+  const next = $html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  if (!document.startViewTransition) {
+    $html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    return;
+  }
+  const x = e.clientX || window.innerWidth / 2;
+  const y = e.clientY || 40;
+  const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const transition = document.startViewTransition(() => {
+    $html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
   });
-
-  const [projects, awardsData] = await Promise.all([
-    loadProjectsFromJSON(),
-    loadAwardsFromJSON()
-  ]);
-
-  if (projects.length > 0) {
-    DATA.projects = projects;
-    DATA.projects.forEach(p => {
-      projectData[p.slug] = {
-        title: p.title,
-        desc: p.description,
-        links: [p.demo, p.github].filter(Boolean).join(' | ')
-      };
-    });
-  }
-
-  const rawAwards = Array.isArray(awardsData)
-    ? awardsData
-    : (awardsData.awards || awardsData.data || []);
-
-  if (rawAwards.length > 0) {
-    DATA.awards = rawAwards.map(item => ({
-      title: item.title || item.award || item.name || item.eventName || "Untitled Award",
-      description: item.description || item.desc || item.details || item.date || "",
-      image: item.image || item.logo || null,
-      ...item
-    }));
-  }
-
-  const getPerPage = () => window.innerWidth <= 600 ? 1 : window.innerWidth <= 900 ? 2 : 3;
-
-  const projectsGrid = document.getElementById('projects-grid');
-  const awardsGrid = document.getElementById('awards-grid');
-
-  if (projectsGrid && DATA.projects.length > 0) {
-    renderCarousel({ containerId: 'projects-grid', items: DATA.projects, perPage: getPerPage() });
-  }
-  if (awardsGrid && DATA.awards.length > 0) {
-    renderCarousel({ containerId: 'awards-grid', items: DATA.awards, perPage: getPerPage() });
-  }
-
-  initCarousels();
-  bindLightboxImages();
-
-  window.addEventListener('resize', () => {
-    if (projectsGrid && DATA.projects.length > 0) {
-      renderCarousel({ containerId: 'projects-grid', items: DATA.projects, perPage: getPerPage() });
-    }
-    if (awardsGrid && DATA.awards.length > 0) {
-      renderCarousel({ containerId: 'awards-grid', items: DATA.awards, perPage: getPerPage() });
-    }
-    initCarousels();
-    bindLightboxImages();
+  transition.ready.then(() => {
+    document.documentElement.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+      { duration: 650, easing: 'cubic-bezier(0.4,0,0.2,1)', pseudoElement: '::view-transition-new(root)' }
+    );
   });
 });
 
-function initCopyrightYear() {
-  const copyrightYearSpan = document.getElementById("copyright-year");
-  if (copyrightYearSpan) {
-    const startYear = 2025;
-    const currentYear = new Date().getFullYear();
-    copyrightYearSpan.textContent = startYear === currentYear ? startYear : `${startYear}–${currentYear}`;
-  }
+const $cursor = document.getElementById('cursor');
+const $ring = document.getElementById('cursor-ring');
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+if (!isTouchDevice && $cursor && $ring) {
+  let mx = -200, my = -200, rx = -200, ry = -200;
+  gsap.set([$cursor, $ring], { xPercent: -50, yPercent: -50 });
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
+  (function loop() {
+    if (document.body.classList.contains('custom-cursor-enabled')) {
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      gsap.set($cursor, { x: mx, y: my });
+      gsap.set($ring, { x: rx, y: ry });
+    }
+    requestAnimationFrame(loop);
+  })();
 }
 
-const DATA = {
-  projects: [],
-  awards: []
-};
+const $nav = document.getElementById('navbar');
+const $menuBtn = document.getElementById('menuBtn');
+let ticking = false;
+
+function updateNavScrolled() {
+  const isMobileNav = window.innerWidth <= 768;
+  $nav.classList.toggle('scrolled', !isMobileNav && window.scrollY > 60);
+  $nav.dataset.mobile = isMobileNav ? 'true' : 'false';
+}
+
+const navSections = document.querySelectorAll('section[id]');
+const navAs = document.querySelectorAll('.nav-links a');
+let sectionTops = [];
+
+function updateSectionTops() {
+  sectionTops = Array.from(navSections).map(s => ({ id: s.id, top: s.offsetTop }));
+}
+
+function activateNavLink() {
+  let current = '';
+  const scrollY = window.scrollY;
+  sectionTops.forEach(s => { if (scrollY >= s.top - 140) current = s.id; });
+  navAs.forEach(a => { a.classList.toggle('active', a.getAttribute('href') === '#' + current); });
+}
+
+function updateScrollbar() {
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const scrolled = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+  document.documentElement.style.setProperty('--sb-stop', (scrolled * 100) + '%');
+}
+
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    requestAnimationFrame(() => { updateNavScrolled(); activateNavLink(); updateScrollbar(); ticking = false; });
+    ticking = true;
+  }
+}, { passive: true });
+
+window.addEventListener('resize', () => { requestAnimationFrame(updateNavScrolled); updateSectionTops(); }, { passive: true });
+window.addEventListener('load', () => { updateSectionTops(); updateNavScrolled(); activateNavLink(); updateScrollbar(); });
+updateNavScrolled();
+
+$menuBtn.addEventListener('click', () => {
+  const open = $nav.classList.toggle('menu-open');
+  $menuBtn.setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('click', (e) => {
+  if ($nav.classList.contains('menu-open') && !e.target.closest('#navbar')) {
+    $nav.classList.remove('menu-open');
+    $menuBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $nav.classList.contains('menu-open')) {
+    $nav.classList.remove('menu-open');
+    $menuBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+document.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', () => {
+  $nav.classList.remove('menu-open');
+  $menuBtn.setAttribute('aria-expanded', 'false');
+}));
+
+const emailUser = 'rainierps8';
+const emailDomain = 'gmail.com';
+const emailLink = document.getElementById('email-link');
+if (emailLink) emailLink.href = `mailto:${emailUser}@${emailDomain}`;
+
+function initCopyrightYear() {
+  const el = document.getElementById('copyright-year');
+  if (!el) return;
+  const start = 2025, cur = new Date().getFullYear();
+  el.textContent = start === cur ? start : `${start}–${cur}`;
+}
+initCopyrightYear();
+
+const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.1 });
+tl.to('#heroLabel',    { opacity: 1, y: 0, duration: 0.65 })
+  .to('#heroTitle',    { opacity: 1, y: 0, duration: 0.8 }, '-=0.35')
+  .to('#heroSubWrap',  { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
+  .to('#heroBody',     { opacity: 1, y: 0, duration: 0.7 }, '-=0.45')
+  .to('#heroLinks',    { opacity: 1, y: 0, duration: 0.7 }, '-=0.45')
+  .to('.hero-avatar-col', { opacity: 1, y: 0, duration: 0.8 }, '-=0.6');
+
+const taglineText = 'Aspiring Engineer · Tech Enthusiast';
+let taglineIndex = 0;
+const taglineEl = document.getElementById('heroSubtitle');
+
+function typeTagline() {
+  if (!taglineEl) return;
+  taglineEl.textContent = '';
+  taglineIndex = 0;
+  function type() {
+    if (taglineIndex < taglineText.length) {
+      taglineEl.textContent += taglineText.charAt(taglineIndex++);
+      setTimeout(type, 55);
+    } else {
+      taglineEl.style.borderRight = 'none';
+      taglineEl.style.animation = 'none';
+    }
+  }
+  type();
+}
+
+tl.call(typeTagline, [], 1.2);
+
+const orbs = document.querySelectorAll('.gradient-orb');
+if (!isTouchDevice) {
+  const orbSetters = [...orbs].map(orb => ({
+    xTo: gsap.quickTo(orb, 'x', { duration: 0.6, ease: 'power2.out' }),
+    yTo: gsap.quickTo(orb, 'y', { duration: 0.6, ease: 'power2.out' }),
+  }));
+  document.addEventListener('mousemove', e => {
+    const x = e.clientX / window.innerWidth - 0.5;
+    const y = e.clientY / window.innerHeight - 0.5;
+    orbSetters.forEach((s, i) => { const spd = (i + 1) * 22; s.xTo(x * spd); s.yTo(y * spd); });
+  }, { passive: true });
+}
+
+gsap.utils.toArray('.gradient-orb').forEach((orb, i) => {
+  gsap.to(orb, {
+    y: i % 2 === 0 ? 160 : -160,
+    scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1 }
+  });
+});
+
+function buildMarquee(id) {
+  const track = document.getElementById(id);
+  if (!track) return;
+  const words = [...MARQUEE_WORDS, ...MARQUEE_WORDS, ...MARQUEE_WORDS];
+  words.forEach(word => {
+    const item = document.createElement('span');
+    item.className = 'marquee-item';
+    item.innerHTML = word + '<span class="marquee-dot"></span>';
+    track.appendChild(item);
+  });
+}
+buildMarquee('marqueeA');
+buildMarquee('marqueeB');
+
+function initMarquee() {
+  const tA = document.getElementById('marqueeA');
+  const tB = document.getElementById('marqueeB');
+  if (!tA || !tB) return;
+  const firstItem = tA.querySelector('.marquee-item');
+  if (!firstItem) return;
+  const itemWidth = firstItem.offsetWidth;
+  const singleSetWidth = itemWidth * MARQUEE_WORDS.length;
+  gsap.set(tB, { x: singleSetWidth });
+  const dur = singleSetWidth / 70;
+  function animTrack(el, startX) {
+    gsap.fromTo(el, { x: startX }, {
+      x: startX - singleSetWidth, duration: dur, ease: 'none', repeat: -1,
+      modifiers: {
+        x: gsap.utils.unitize(val => {
+          let v = parseFloat(val) % singleSetWidth;
+          if (v > 0) v -= singleSetWidth;
+          return v;
+        })
+      }
+    });
+  }
+  animTrack(tA, 0);
+  animTrack(tB, singleSetWidth);
+}
+window.addEventListener('load', () => setTimeout(initMarquee, 80));
+
+function splitTextToSpans(selector) {
+  document.querySelectorAll(selector).forEach(el => {
+    const text = el.innerText;
+    el.innerHTML = '';
+    text.split('').forEach(char => {
+      if (char === '\n') { el.appendChild(document.createElement('br')); return; }
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.innerHTML = char === ' ' ? '&nbsp;' : char;
+      el.appendChild(span);
+    });
+  });
+}
+splitTextToSpans('.section-title');
+
+gsap.utils.toArray('.section-title').forEach(title => {
+  gsap.from(title.querySelectorAll('.char'), {
+    scrollTrigger: { trigger: title, start: 'top 90%', end: 'top 60%', scrub: 0.8 },
+    y: 50, opacity: 0, scale: 0.7, rotationX: -70, stagger: 0.035, ease: 'back.out(1.5)'
+  });
+});
+
+gsap.utils.toArray('.reveal').forEach(el => {
+  gsap.fromTo(el, 
+    { opacity: 0, y: 40 },
+    {
+      opacity: 1,
+      y: 0,
+      duration: 1.0,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 85%',
+        toggleActions: 'play none none none',
+        once: true
+      }
+    }
+  );
+});
+
+gsap.utils.toArray('.stagger').forEach(container => {
+  const children = Array.from(container.children).filter(child => !child.classList.contains('reveal'));
+  if (children.length === 0) return;
+  gsap.fromTo(children,
+    { opacity: 0, y: 30 },
+    {
+      opacity: 1,
+      y: 0,
+      duration: 0.85,
+      stagger: 0.12,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: container,
+        start: 'top 85%',
+        toggleActions: 'play none none none',
+        once: true
+      }
+    }
+  );
+});
+
+const DATA = { projects: [], awards: [] };
+const projectData = {};
 
 async function loadProjectsFromJSON() {
   try {
-    const res = await fetch(
-      'https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/projects.json'
-    );
-    if (!res.ok) throw new Error('Failed to load projects.json');
+    const res = await fetch('https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/projects.json');
+    if (!res.ok) throw new Error('Failed');
     return await res.json();
-  } catch (err) {
-    console.error('Failed to load projects.json:', err);
-    return [];
-  }
+  } catch { return []; }
 }
 
 async function loadAwardsFromJSON() {
   try {
-    const res = await fetch(
-      'https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/awards.json'
-    );
-    if (!res.ok) throw new Error('Failed to load awards.json');
+    const res = await fetch('https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/awards.json');
+    if (!res.ok) throw new Error('Failed');
     return await res.json();
-  } catch (err) {
-    console.error('Failed to load awards.json:', err);
-    return [];
+  } catch { return []; }
+}
+
+function getPerPage() {
+  return window.innerWidth <= 768 ? 1 : 3;
+}
+
+function renderCarousel({ containerId, items, perPage }) {
+  const track = document.getElementById(containerId);
+  if (!track) return;
+  track.innerHTML = '';
+  if (!items || !items.length) return;
+
+  for (let i = 0; i < items.length; i += perPage) {
+    const page = document.createElement('div');
+    page.className = 'carousel-cards';
+    page.style.gridTemplateColumns = `repeat(${perPage}, 1fr)`;
+    page.style.minWidth = '100%';
+
+    items.slice(i, i + perPage).forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'proj-card';
+      card.innerHTML = `
+        ${item.image ? `<img src="${item.image}" alt="${item.title}" loading="lazy" decoding="async" style="cursor:zoom-in">` : ''}
+        <div class="proj-card-body">
+          <h3>${item.title}</h3>
+          <p>${item.description || ''}</p>
+          ${item.labels?.length ? `<div class="proj-labels">${item.labels.map(l => `<span class="proj-label">${l}</span>`).join('')}</div>` : ''}
+          ${item.demo || item.github ? `
+            <div class="proj-buttons">
+              ${item.demo ? `<a href="${item.demo}" class="proj-btn" target="_blank" rel="noopener">
+                <span>Demo</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;display:inline-block;flex-shrink:0;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </a>` : ''}
+              ${item.github ? `<a href="${item.github}" class="proj-btn" target="_blank" rel="noopener">
+                <span>GitHub</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;display:inline-block;flex-shrink:0;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+              </a>` : ''}
+            </div>` : ''}
+        </div>`;
+      page.appendChild(card);
+    });
+    track.appendChild(page);
   }
 }
 
-const sections = document.querySelectorAll("section");
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("visible"); });
-}, { threshold: 0.1 });
-sections.forEach(sec => observer.observe(sec));
+function setCarouselSlide(carousel, index) {
+  const track = carousel.querySelector('.carousel-track');
+  const dotsContainer = carousel.querySelector('.carousel-dots');
+  if (!track || !dotsContainer) return;
 
-const header = document.getElementById("header");
+  const pages = Array.from(track.children);
+  const N = pages.length;
+  if (N === 0) return;
 
-if (header) {
-  let scrollTimeout;
-  window.addEventListener("scroll", () => {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-      header.style.boxShadow = window.scrollY > 50
-        ? "0 4px 12px rgba(0,0,0,0.2)"
-        : "0 2px 5px rgba(0,0,0,0.1)";
-    }, 50);
-  });
-}
+  const clamped = Math.max(0, Math.min(index, N - 1));
+  track.style.transform = `translateX(-${clamped * 100}%)`;
+  carousel.dataset.activeIndex = clamped;
 
-const tagline = document.getElementById("tagline");
-let text = "High School Student • Aspiring Engineer • Tech Enthusiast";
-function getTaglineText() {
-  return window.innerWidth <= 600 ? text.replace(/ • /g, "\n") : text;
-}
+  const isMobile = window.innerWidth <= 768;
+  const maxDots = isMobile ? 3 : 5;
+  const K = Math.min(maxDots, N);
 
-function startTypewriter() {
-  if (!tagline) return;
-  tagline.textContent = '';
-  let i = 0;
-  const finalText = getTaglineText();
-  tagline.style.whiteSpace = window.innerWidth <= 600 ? 'pre-wrap' : 'normal';
+  let S = 0;
+  let activeDotIndex = clamped;
 
-  function typeWriter() {
-    if (!tagline) return;
-    if (i < finalText.length) {
-      const char = finalText.charAt(i++);
-      tagline.textContent += char;
-      setTimeout(typeWriter, 60); // adjust speed here
+  if (N > maxDots) {
+    const half = Math.floor(K / 2);
+    if (clamped < half) {
+      S = 0;
+      activeDotIndex = clamped;
+    } else if (clamped >= N - half) {
+      S = N - K;
+      activeDotIndex = clamped - S;
     } else {
-      tagline.style.borderRight = "none";
+      activeDotIndex = half;
+      S = clamped - activeDotIndex;
     }
   }
 
-  typeWriter();
-}
-
-if (tagline) startTypewriter();
-
-let typewriterTimeout;
-if (tagline) {
-  window.addEventListener('resize', () => {
-    clearTimeout(typewriterTimeout);
-    typewriterTimeout = setTimeout(startTypewriter, 200);
-  });
-}
-
-const themeToggle = document.getElementById("theme-toggle");
-const html = document.documentElement;
-function setTheme(mode) {
-  html.classList.toggle("dark", mode === "dark");
-  localStorage.setItem("theme", mode); // Save immediately
-
-  if (!themeToggle) return;
-
-  themeToggle.textContent = '';
-  const icon = document.createElement('i');
-  icon.setAttribute('data-lucide', mode === 'dark' ? 'sun' : 'moon');
-  themeToggle.appendChild(icon);
-
-  if (window.lucide) lucide.createIcons();
-}
-
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme) setTheme(savedTheme); else setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-themeToggle?.addEventListener("click", () => { setTheme(html.classList.contains("dark") ? "light" : "dark"); });
-
-function setCarouselSlide(carousel, index) {
-  const track = carousel.querySelector(".carousel-track");
-  const dots = carousel.querySelectorAll(".carousel-dots button");
-  const max = dots.length - 1;
-
-  const clamped = Math.max(0, Math.min(index, max));
-
-  track.style.transform = `translateX(-${clamped * 100}%)`;
-
-  dots.forEach(d => d.classList.remove("active"));
-  dots[clamped]?.classList.add("active");
-
-  carousel.dataset.activeIndex = clamped;
+  dotsContainer.innerHTML = '';
+  for (let i = 0; i < K; i++) {
+    const pageIndex = S + i;
+    const dot = document.createElement('button');
+    dot.setAttribute('aria-label', `Go to slide ${pageIndex + 1}`);
+    if (i === activeDotIndex) {
+      dot.classList.add('active');
+    }
+    dot.addEventListener('click', () => setCarouselSlide(carousel, pageIndex));
+    dotsContainer.appendChild(dot);
+  }
 }
 
 function initCarousels() {
-  document.querySelectorAll("[data-carousel]").forEach(carousel => {
-    const track = carousel.querySelector(".carousel-track");
-    if (!track) return;
-
-    const pages = Array.from(track.children);
-    const dotsContainer = carousel.querySelector(".carousel-dots");
-    if (!dotsContainer) return;
-
-    dotsContainer.innerHTML = '';
-    carousel.dataset.activeIndex = 0;
-
-    pages.forEach((_, idx) => {
-      const dot = document.createElement("button");
-      dot.setAttribute("aria-label", `Go to slide ${idx + 1}`);
-      if (idx === 0) dot.classList.add("active");
-
-      dot.addEventListener("click", () => {
-        setCarouselSlide(carousel, idx);
-      });
-
-      dotsContainer.appendChild(dot);
-    });
-
+  document.querySelectorAll('[data-carousel]').forEach(carousel => {
+    const activeIndex = parseInt(carousel.dataset.activeIndex, 10) || 0;
+    setCarouselSlide(carousel, activeIndex);
     addSwipeSupport(carousel);
   });
 }
 
 function addSwipeSupport(carousel) {
-  if (carousel.dataset.swipeBound === "true") return;
-  carousel.dataset.swipeBound = "true";
-
-  const track = carousel.querySelector(".carousel-track");
+  if (carousel.dataset.swipeBound === 'true') return;
+  carousel.dataset.swipeBound = 'true';
+  const track = carousel.querySelector('.carousel-track');
   if (!track) return;
 
   let startX = 0;
-  let active = false;
-  let handled = false;
+  let startY = 0;
+  let isSwiping = false;
+  let isScrollAction = false;
+  let diffX = 0;
+  let dragOccurred = false;
 
-  const threshold = 45;
-
-  const getIndex = () => Number(carousel.dataset.activeIndex || 0);
-
-  const start = x => {
-    startX = x;
-    active = true;
-    handled = false;
+  const getPos = e => {
+    if (e.touches && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
   };
 
-  const move = x => {
-    if (!active || handled) return;
-
-    const diff = x - startX;
-    if (Math.abs(diff) > threshold) {
-      const index = getIndex();
-      setCarouselSlide(carousel, diff < 0 ? index + 1 : index - 1);
-      handled = true;
+  const onStart = e => {
+    if (e.type === 'mousedown' && e.button !== 0) return;
+    const pos = getPos(e);
+    startX = pos.x;
+    startY = pos.y;
+    isSwiping = true;
+    isScrollAction = false;
+    diffX = 0;
+    dragOccurred = false;
+    track.style.transition = 'none';
+    if (e.type === 'mousedown') {
+      track.style.cursor = 'grabbing';
     }
   };
 
-  const end = () => {
-    active = false;
-    handled = false;
-  };
+  const onMove = e => {
+    if (!isSwiping || isScrollAction) return;
 
-  track.addEventListener("touchstart", e => start(e.touches[0].clientX), { passive: true });
-  track.addEventListener("touchmove", e => move(e.touches[0].clientX), { passive: true });
-  track.addEventListener("touchend", end);
+    const pos = getPos(e);
+    diffX = pos.x - startX;
+    const diffY = pos.y - startY;
 
-  track.addEventListener("mousedown", e => start(e.clientX));
-  window.addEventListener("mousemove", e => move(e.clientX));
-  window.addEventListener("mouseup", end);
-}
-
-const menuToggle = document.getElementById("menu-toggle");
-const navLinks = document.getElementById("nav-links");
-menuToggle?.addEventListener("click", () => {
-  navLinks.classList.toggle("show");
-  menuToggle.classList.toggle("open");
-  const expanded = menuToggle.getAttribute("aria-expanded") === "true";
-  menuToggle.setAttribute("aria-expanded", String(!expanded));
-});
-
-document.addEventListener('click', (e) => {
-  if (navLinks.classList.contains('show') &&
-    !navLinks.contains(e.target) &&
-    !menuToggle.contains(e.target)) {
-    closeMenu();
-  }
-});
-
-navLinks?.addEventListener('click', (e) => {
-  if (e.target.tagName === 'A' || e.target.closest('a') || e.target.closest('button')) {
-    closeMenu();
-  }
-});
-
-function closeMenu() {
-  navLinks.classList.remove('show');
-  menuToggle.classList.remove('open');
-  menuToggle.setAttribute('aria-expanded', 'false');
-}
-
-const logos = document.querySelectorAll('.brand img.logo');
-
-const emailUser = "rainierps8";
-const emailDomain = "gmail.com";
-const emailLink = document.getElementById('email-link');
-if (emailLink) emailLink.href = `mailto:${emailUser}@${emailDomain}`;
-
-
-function renderCarousel({ containerId, items, perPage }) {
-  const track = document.getElementById(containerId);
-  if (!track) {
-    return;
-  }
-
-  track.innerHTML = '';
-
-  if (!items || items.length === 0) {
-    return;
-  }
-
-  for (let i = 0; i < items.length; i += perPage) {
-    const page = document.createElement('div');
-    page.className = 'cards';
-
-    items.slice(i, i + perPage).forEach(item => {
-      const card = document.createElement('div');
-      card.className = `card ${item.empty ? 'empty' : ''}`;
-
-      if (item.empty) {
-        card.textContent = item.title;
-        page.appendChild(card);
+    if (e.touches) {
+      if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 10) {
+        isScrollAction = true;
+        isSwiping = false;
+        track.style.transition = 'transform 0.5s ease';
+        const activeIndex = parseInt(carousel.dataset.activeIndex, 10) || 0;
+        track.style.transform = `translateX(-${activeIndex * 100}%)`;
         return;
       }
+    }
 
-      card.innerHTML = `
-          ${item.image ? `<img src="${item.image}" alt="${item.title}" loading="lazy" decoding="async">` : ''}
-          <h3>${item.title}</h3>
-          <p>${item.description}</p>
+    if (Math.abs(diffX) > 10) {
+      dragOccurred = true;
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+      const activeIndex = parseInt(carousel.dataset.activeIndex, 10) || 0;
+      track.style.transform = `translateX(calc(-${activeIndex * 100}% + ${diffX}px))`;
+    }
+  };
 
-          ${item.labels?.length ? `
-            <div class="labels">
-              ${item.labels.map(l => `<span class="label">${l}</span>`).join('')}
-            </div>
-          ` : ''}
+  const onEnd = e => {
+    if (!isSwiping) return;
+    isSwiping = false;
+    track.style.cursor = '';
 
-          ${item.demo || item.github ? `
-            <div class="buttons">
-              ${item.demo ? `<a href="${item.demo}" class="btn" target="_blank" rel="noopener"><i data-lucide="external-link"></i> Demo</a>` : ''}
-              ${item.github ? `<a href="${item.github}" class="btn" target="_blank" rel="noopener"><i data-lucide="github"></i> GitHub</a>` : ''}
-            </div>
-          ` : ''}
-        `;
+    track.style.transition = 'transform 0.5s ease';
+    const activeIndex = parseInt(carousel.dataset.activeIndex, 10) || 0;
+    const width = carousel.offsetWidth;
+    const threshold = width * 0.15;
 
-      page.appendChild(card);
-    });
+    let targetIndex = activeIndex;
+    if (diffX < -threshold) {
+      targetIndex = activeIndex + 1;
+    } else if (diffX > threshold) {
+      targetIndex = activeIndex - 1;
+    }
 
-    track.appendChild(page);
-  }
+    setCarouselSlide(carousel, targetIndex);
+  };
 
-  if (window.lucide) lucide.createIcons();
+  track.addEventListener('touchstart', onStart, { passive: true });
+  track.addEventListener('touchmove', onMove, { passive: false });
+  track.addEventListener('touchend', onEnd);
+
+  track.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+
+  track.addEventListener('dragstart', e => {
+    e.preventDefault();
+  });
+
+  track.addEventListener('click', e => {
+    if (dragOccurred) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
 }
 
-const projectData = {};
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.lucide) lucide.createIcons();
 
-const STATIC_DATA = {
-  about: "I'm a high school student passionate about technology, science, and innovation. I enjoy creating projects that solve real-world problems while constantly exploring new ideas and learning new skills, whether through STEM competitions or personal projects. Feel free to check out my projects below!",
-  experience: [
-    "- Hack Club Member",
-    "- Club Leader Hack Club Binus School Semarang",
-    "- Hack the Hat Elective Member (Raspberry Pi & Sense HAT)",
-    "- STEM Club Member",
-    "- Digital Journalism Elective Member",
-    "- RevoU SECC - Coding Camp"
-  ],
-  education: [
-    "- Binus School Semarang — High School (2024–Present)",
-    "- Daniel Creative School — Junior High School (2021–2024)",
-    "- Daniel Creative School — Elementary (2015–2021)"
-  ],
-  skills: [
-    { title: "Maths & Science", desc: "I have strong knowledge in mathematics and science, which I apply to problem-solving, experiments, research, and technical projects." },
-    { title: "3D Printing & PCB Design", desc: "I design and assemble mechanical and electronic projects using Fusion 360 for 3D modeling and KiCad for PCB design, with hands-on experience in soldering and assembling custom electronics." },
-    { title: "Programming", desc: "I have experience in programming languages such as Python, JavaScript (ES6+), SQL (basic), and Arduino (C/C++), as well as web technologies including HTML and CSS." },
-    { title: "Languages", desc: "English (Fluent), Chinese (Learning), German (Learning), Indonesian (Native)" }
-  ],
-  contact: [
-    { platform: "GitHub", link: "https://github.com/Rainier-PS" },
-    { platform: "Email", link: "mailto:rainierps8@gmail.com" },
-    { platform: "Instagram", link: "https://instagram.com/rainier_ps" },
-    { platform: "Instructables", link: "https://www.instructables.com/member/Rainier-PS/" },
-    { platform: "LinkedIn", link: "https://www.linkedin.com/in/LINKEDIN_USERNAME" },
-    { platform: "Semarang, Indonesia", link: "https://www.google.com/maps/place/Semarang,+Indonesia" }
-  ]
-};
+  const [projects, awardsData] = await Promise.all([loadProjectsFromJSON(), loadAwardsFromJSON()]);
 
+  if (projects.length > 0) {
+    DATA.projects = projects;
+    projects.forEach(p => { projectData[p.slug] = { title: p.title, desc: p.description }; });
+  }
+  const rawAwards = Array.isArray(awardsData) ? awardsData : (awardsData.awards || awardsData.data || []);
+  if (rawAwards.length > 0) {
+    DATA.awards = rawAwards.map(item => ({
+      title: item.title || item.award || item.name || 'Untitled Award',
+      description: item.description || item.desc || item.details || item.date || '',
+      image: item.image || item.logo || null,
+      labels: item.labels || [],
+      ...item
+    }));
+  }
 
+  const projectsGrid = document.getElementById('projects-grid');
+  const awardsGrid = document.getElementById('awards-grid');
+  if (projectsGrid && DATA.projects.length > 0) renderCarousel({ containerId: 'projects-grid', items: DATA.projects, perPage: getPerPage() });
+  if (awardsGrid && DATA.awards.length > 0) renderCarousel({ containerId: 'awards-grid', items: DATA.awards, perPage: getPerPage() });
+
+  initCarousels();
+  bindLightboxImages();
+
+  ScrollTrigger.refresh();
+
+  window.addEventListener('resize', () => {
+    if (projectsGrid && DATA.projects.length > 0) renderCarousel({ containerId: 'projects-grid', items: DATA.projects, perPage: getPerPage() });
+    if (awardsGrid && DATA.awards.length > 0) renderCarousel({ containerId: 'awards-grid', items: DATA.awards, perPage: getPerPage() });
+    initCarousels();
+    bindLightboxImages();
+    ScrollTrigger.refresh();
+  });
+});
 
 const lightbox = document.getElementById('imageLightbox');
 const lightboxImg = document.getElementById('lightboxImg');
@@ -405,7 +546,7 @@ const closeBtn = document.getElementById('closeLightbox');
 const openBtn = document.getElementById('openInNewTab');
 
 function bindLightboxImages() {
-  document.querySelectorAll('#awards .card img, #projects .card img').forEach(img => {
+  document.querySelectorAll('#projects .proj-card img, #awards .proj-card img').forEach(img => {
     img.style.cursor = 'zoom-in';
     img.addEventListener('click', () => {
       lightboxImg.src = img.src;
@@ -415,77 +556,67 @@ function bindLightboxImages() {
   });
 }
 
-closeBtn?.addEventListener('click', () => {
-  lightbox.classList.remove('active');
-  document.body.style.overflow = '';
-});
-
-openBtn?.addEventListener('click', () => {
-  if (lightboxImg.src) window.open(lightboxImg.src, '_blank', 'noopener');
-});
-
-if (lightbox) {
-  lightbox.addEventListener('click', e => {
-    if (e.target === lightbox) {
-      lightbox.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-  });
-}
-
 function closeLightbox() {
-  if (!lightbox) return;
   lightbox.classList.remove('active');
   document.body.style.overflow = '';
 }
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' || e.key === 'Esc') {
-    if (lightbox && lightbox.classList.contains('active')) closeLightbox();
-  }
+closeBtn?.addEventListener('click', closeLightbox);
+openBtn?.addEventListener('click', () => { if (lightboxImg.src) window.open(lightboxImg.src, '_blank', 'noopener'); });
+lightbox?.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Escape' || e.key === 'Esc') && lightbox?.classList.contains('active')) closeLightbox();
 });
 
-// Back to Top Logic
-const backToTopBtn = document.getElementById("backToTop");
+const backToTopBtn = document.getElementById('backToTop');
 if (backToTopBtn) {
-  backToTopBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+  backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
 
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-      backToTopBtn.classList.add("visible");
-    } else {
-      backToTopBtn.classList.remove("visible");
-    }
+const $customScrollbar = document.querySelector('.custom-scrollbar');
+let isDragging = false;
+if ($customScrollbar) {
+  $customScrollbar.addEventListener('mousedown', (e) => {
+    if (window.innerWidth <= 768) return;
+    isDragging = true;
+    document.body.style.userSelect = 'none';
+    const onDrag = (e) => {
+      if (!isDragging) return;
+      const rect = $customScrollbar.getBoundingClientRect();
+      const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+      window.scrollTo(0, (y / rect.height) * (document.documentElement.scrollHeight - window.innerHeight));
+    };
+    const onStop = () => { isDragging = false; document.body.style.userSelect = ''; document.removeEventListener('mousemove', onDrag); document.removeEventListener('mouseup', onStop); };
+    onDrag(e);
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', onStop);
   });
 }
 
 function initGitHubGraph() {
-  const calendar = document.getElementById("calendar");
+  const calendar = document.getElementById('calendar');
   if (!calendar) return;
-
-  const USERNAME = "Rainier-PS";
+  const USERNAME = 'Rainier-PS';
   const YEARS = [2026, 2025, 2024];
-
-  const monthsRow = document.getElementById("months");
-  const summary = document.getElementById("summary");
-  const tooltip = document.getElementById("tooltip");
-  const yearSelect = document.getElementById("yearSelect");
-  const yearButtons = document.getElementById("yearButtons");
+  const monthsRow = document.getElementById('months');
+  const summary = document.getElementById('summary');
+  const tooltip = document.getElementById('tooltip');
+  const yearSelect = document.getElementById('yearSelect');
+  const yearButtons = document.getElementById('yearButtons');
 
   function level(count) {
-    if (count >= 8) return 4;
-    if (count >= 4) return 3;
+    if (count >= 8) return 5;
+    if (count >= 4) return 4;
+    if (count >= 2) return 3;
     if (count >= 1) return 2;
     return 0;
   }
 
   function buildYearButtons(active) {
-    yearButtons.innerHTML = "";
+    yearButtons.innerHTML = '';
     YEARS.forEach(y => {
-      const btn = document.createElement("button");
-      btn.className = "year-btn" + (y === active ? " active" : "");
+      const btn = document.createElement('button');
+      btn.className = 'year-btn' + (y === active ? ' active' : '');
       btn.textContent = y;
       btn.onclick = () => loadYear(y);
       yearButtons.appendChild(btn);
@@ -493,78 +624,67 @@ function initGitHubGraph() {
   }
 
   async function loadYear(year) {
-    calendar.innerHTML = "";
-    monthsRow.innerHTML = "";
-    summary.textContent = "Loading…";
+    calendar.innerHTML = ''; monthsRow.innerHTML = '';
+    summary.textContent = 'Loading…';
     yearSelect.value = year;
     buildYearButtons(year);
-
     try {
-      const res = await fetch(
-        `https://github-contributions-api.jogruber.de/v4/${USERNAME}?y=${year}`
-      );
+      const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${USERNAME}?y=${year}`);
       const data = await res.json();
       const days = data.contributions;
-
-      summary.textContent = `${data.total[year]} contributions in the last year`;
-
-      const monthCounts = {};
-      let week = document.createElement("div");
-      week.className = "week";
-
+      summary.textContent = `${data.total[year]} contributions in ${year}`;
+      let currentMonth = -1;
+      let weekIndex = 0;
+      const monthStarts = {};
+      let week = document.createElement('div');
+      week.className = 'week';
       const firstDay = new Date(days[0].date).getDay();
-      for (let i = 0; i < firstDay; i++) {
-        week.appendChild(document.createElement("div")).className = "day";
-      }
-
+      for (let i = 0; i < firstDay; i++) week.appendChild(Object.assign(document.createElement('div'), { className: 'day' }));
       days.forEach(d => {
         const date = new Date(d.date);
         const m = date.getMonth();
-        monthCounts[m] = (monthCounts[m] || 0) + 1;
-
-        const cell = document.createElement("div");
+        if (m !== currentMonth) {
+          currentMonth = m;
+          if (monthStarts[m] === undefined) {
+            monthStarts[m] = weekIndex;
+          }
+        }
+        const cell = document.createElement('div');
         const lvl = level(d.count);
-        cell.className = "day" + (lvl ? ` lvl-${lvl}` : "");
-
-        cell.setAttribute(
-          "aria-label",
-          `${d.count} contributions on ${d.date}`
-        );
-
-        cell.onmouseenter = () => {
-          tooltip.textContent = `${d.count} contributions on ${d.date}`;
-          tooltip.style.opacity = 1;
-        };
+        cell.className = 'day' + (lvl ? ` lvl-${lvl}` : '');
+        cell.setAttribute('aria-label', `${d.count} contributions on ${d.date}`);
+        cell.onmouseenter = () => { tooltip.textContent = `${d.count} on ${d.date}`; tooltip.style.opacity = 1; };
         cell.onmousemove = e => {
-          tooltip.style.left = e.clientX + 12 + "px";
-          tooltip.style.top = e.clientY - 12 + "px";
+          const tooltipWidth = tooltip.offsetWidth || 120;
+          const gap = 12;
+          let left = e.clientX + gap;
+          let top = e.clientY - 12;
+          if (left + tooltipWidth > window.innerWidth) {
+            left = e.clientX - tooltipWidth - gap;
+          }
+          tooltip.style.left = left + 'px';
+          tooltip.style.top = top + 'px';
         };
-        cell.onmouseleave = () => tooltip.style.opacity = 0;
-
+        cell.onmouseleave = () => { tooltip.style.opacity = 0; };
         week.appendChild(cell);
-
         if (date.getDay() === 6) {
           calendar.appendChild(week);
-          week = document.createElement("div");
-          week.className = "week";
+          week = document.createElement('div');
+          week.className = 'week';
+          weekIndex++;
         }
       });
-
-      while (week.children.length < 7) {
-        week.appendChild(document.createElement("div")).className = "day";
-      }
+      while (week.children.length < 7) week.appendChild(Object.assign(document.createElement('div'), { className: 'day' }));
       calendar.appendChild(week);
-
-      Object.entries(monthCounts).forEach(([m, count]) => {
-        const label = document.createElement("div");
-        label.className = "month";
-        label.style.setProperty("--span", Math.ceil(count / 7));
-        label.textContent = new Date(2024, m).toLocaleString("en", { month: "short" });
+      Object.entries(monthStarts).forEach(([m, startIndex]) => {
+        const label = document.createElement('div');
+        label.className = 'month';
+        label.style.left = `${startIndex * 17}px`; // 14px day + 3px gap = 17px
+        label.textContent = new Date(2024, m).toLocaleString('en', { month: 'short' });
         monthsRow.appendChild(label);
       });
     } catch (e) {
-      console.error("Failed to load GitHub contributions:", e);
-      summary.textContent = "Failed to load contributions.";
+      summary.textContent = 'Failed to load contributions.';
     }
   }
 
@@ -572,49 +692,4 @@ function initGitHubGraph() {
   loadYear(YEARS[0]);
 }
 
-async function loadPublications() {
-  const grid = document.getElementById('publications-grid');
-  if (!grid) return;
-
-  try {
-    const res = await fetch('https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/publications.json');
-    if (!res.ok) throw new Error('Failed to load publications');
-    const publications = await res.json();
-
-    grid.innerHTML = '';
-
-    publications.forEach(pub => {
-      const article = document.createElement('article');
-      article.className = 'pub-card';
-      article.innerHTML = `
-        <a href="${pub.url}" target="_blank" rel="noopener noreferrer" class="pub-img-link" aria-label="Read ${pub.title}">
-          <div class="pub-img-wrapper icon-cover">
-             <i data-lucide="${pub.icon || 'book'}" class="pub-icon"></i>
-          </div>
-        </a>
-        <div class="pub-content">
-          <h3><a href="${pub.url}" target="_blank" rel="noopener noreferrer">${pub.title}</a></h3>
-          <p>${pub.description}</p>
-          
-          <div class="pub-tags">
-             ${pub.tags ? pub.tags.map(t => `<span class="tag">${t}</span>`).join('') : ''}
-          </div>
-
-          <div class="pub-footer">
-             <span class="pub-source"><i data-lucide="book-open"></i> Instructables</span>
-             <a href="${pub.url}" target="_blank" rel="noopener noreferrer" class="read-more">Read</a>
-          </div>
-        </div>
-      `;
-      grid.appendChild(article);
-    });
-
-    if (window.lucide) lucide.createIcons();
-  } catch (err) {
-    console.error('Error loading publications:', err);
-    grid.innerHTML = '<p style="text-align:center; color:var(--muted);">Unable to load publications at this time.</p>';
-  }
-}
-
 initGitHubGraph();
-loadPublications();
