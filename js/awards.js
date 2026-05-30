@@ -23,22 +23,24 @@ async function loadAwards() {
 
         awards.forEach(award => {
             const card = document.createElement('div');
-            card.className = `card award-card ${!award.image ? 'no-image' : ''}`;
+            card.className = `award-card ${!award.image ? 'no-image' : ''}`;
 
             card.innerHTML = `
-                ${award.image ? `<img src="${award.image}" alt="${award.title}" loading="lazy">` : ''}
-                <h3>${award.title}</h3>
-                <p>${award.description || ''}</p>
+                ${award.image ? `<img src="${award.image}" alt="${award.title}" loading="lazy" decoding="async">` : ''}
+                <div class="award-card-body">
+                    <h3>${award.title}</h3>
+                    <p>${award.description || ''}</p>
+                </div>
             `;
             grid.appendChild(card);
         });
 
-        if (window.lucide) lucide.createIcons();
         initLightbox();
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
 
     } catch (err) {
         console.error('Award loading error:', err);
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--subtext);">Unable to load awards at this time.</p>';
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Unable to load awards at this time.</p>';
     }
 }
 
@@ -78,4 +80,3 @@ function initLightbox() {
         });
     }
 }
-
