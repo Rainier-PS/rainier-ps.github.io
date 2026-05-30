@@ -1,8 +1,7 @@
 (function () {
-    // Configuration & State
     const config = {
-        size: 80,         // Source resolution
-        scale: 6,         // Visual Scale
+        size: 80,
+        scale: 6,
         gap: 1,
         isCircleMask: true,
         animType: 'none',
@@ -20,19 +19,18 @@
     canvas.height = config.size * config.scale;
     const ctx = canvas.getContext("2d");
 
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = "https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Avatar.svg";
+    const DEFAULT_IMAGE = "https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Avatar.svg";
 
     let sourceData = null;
     let baseImageCanvas = document.createElement("canvas");
+    let customObjectUrl = null;
 
     let currentRandomEffect = 'linear';
     let lastRandomSwitch = 0;
     const randomInterval = 3000;
     const strategies = ['linear', 'radar', 'spotlight', 'pulse'];
 
-    img.onload = () => {
+    function processLoadedImage(image) {
         const loader = document.getElementById("px-loading");
         if (loader) loader.style.display = "none";
 
@@ -41,12 +39,28 @@
         temp.height = config.size;
         const tctx = temp.getContext("2d");
         tctx.imageSmoothingEnabled = false;
-        tctx.drawImage(img, 0, 0, config.size, config.size);
+        tctx.drawImage(image, 0, 0, config.size, config.size);
         sourceData = tctx.getImageData(0, 0, config.size, config.size).data;
 
         generateBaseLayer();
-        requestAnimationFrame(drawLoop);
-    };
+    }
+
+    function loadImage(src) {
+        const loader = document.getElementById("px-loading");
+        if (loader) loader.style.display = "flex";
+
+        const img = new Image();
+        if (src.startsWith("http")) img.crossOrigin = "anonymous";
+
+        img.onload = () => processLoadedImage(img);
+        img.onerror = () => {
+            if (loader) loader.style.display = "none";
+        };
+        img.src = src;
+    }
+
+    loadImage(DEFAULT_IMAGE);
+    requestAnimationFrame(drawLoop);
 
     function generateBaseLayer() {
         baseImageCanvas.width = canvas.width;
@@ -193,18 +207,51 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // UI Logic
     const panel = document.getElementById("px-panel");
     const trigger = document.getElementById("px-settings-trigger");
     const closeBtn = document.getElementById("px-panel-close");
+    const backdrop = document.getElementById("px-panel-backdrop");
+    const wrapper = document.querySelector(".pixel-art-wrapper");
+    const toolbar = document.querySelector(".px-toolbar");
+    const uploadTrigger = document.getElementById("px-upload-trigger");
+    const uploadInput = document.getElementById("px-upload-input");
+    const resetTrigger = document.getElementById("px-reset-trigger");
+    const downloadTrigger = document.getElementById("px-download-trigger");
 
     function setPanelState(isOpen) {
         if (panel) panel.classList.toggle("open", isOpen);
-        if (trigger) trigger.classList.toggle("hidden", isOpen);
+        if (toolbar) toolbar.classList.toggle("hidden", isOpen);
+        if (backdrop) {
+            backdrop.classList.toggle("visible", isOpen);
+            backdrop.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        }
     }
 
-    if (trigger) trigger.onclick = () => setPanelState(true);
-    if (closeBtn) closeBtn.onclick = () => setPanelState(false);
+    if (trigger) trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setPanelState(true);
+    });
+
+    if (closeBtn) closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setPanelState(false);
+    });
+
+    if (backdrop) backdrop.addEventListener("click", () => setPanelState(false));
+
+    if (wrapper) wrapper.addEventListener("click", (e) => {
+        if (!panel?.classList.contains("open")) return;
+        if (panel.contains(e.target)) return;
+        setPanelState(false);
+    });
+
+    if (panel) panel.addEventListener("click", (e) => e.stopPropagation());
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && panel?.classList.contains("open")) {
+            setPanelState(false);
+        }
+    });
 
     function bind(id, key, displayId) {
         const el = document.getElementById(id);
@@ -238,5 +285,44 @@
         });
     });
 
-})();
+    if (uploadTrigger && uploadInput) {
+        uploadTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            uploadInput.click();
+        });
 
+        uploadInput.addEventListener("change", (e) => {
+            const file = e.target.files?.[0];
+            if (!file || !file.type.startsWith("image/")) return;
+
+            if (customObjectUrl) URL.revokeObjectURL(customObjectUrl);
+            customObjectUrl = URL.createObjectURL(file);
+            loadImage(customObjectUrl);
+            uploadInput.value = "";
+        });
+    }
+
+    if (resetTrigger) {
+        resetTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (customObjectUrl) {
+                URL.revokeObjectURL(customObjectUrl);
+                customObjectUrl = null;
+            }
+            loadImage(DEFAULT_IMAGE);
+        });
+    }
+
+    if (downloadTrigger) {
+        downloadTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (!sourceData) return;
+
+            const link = document.createElement("a");
+            link.download = "pixel-art.png";
+            link.href = baseImageCanvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+})();
