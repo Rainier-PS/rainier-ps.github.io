@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="transition-colors duration-300">
+<html lang="en" data-theme="dark" class="transition-colors duration-300">
 
 <head>
     <meta charset="UTF-8" />
@@ -11,7 +11,6 @@
         content="Technical guides and tutorials on Arduino, ESP32, and IoT published by Rainier Pearson Saputra on Instructables." />
     <link rel="canonical" href="https://rainier-ps.github.io/publications.html" />
 
-    <!-- Open Graph / Twitter Meta Tags -->
     <meta property="og:title" content="Publications | Rainier Pearson Saputra" />
     <meta property="og:description" content="Technical guides and tutorials on Arduino, ESP32, and IoT." />
     <meta property="og:type" content="website" />
@@ -23,90 +22,135 @@
         href="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Favicon.svg"
         type="image/svg+xml" />
     <link rel="icon" href="favicon.ico" sizes="any" />
-    <link rel="apple-touch-icon"
-        href="/images/site/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="/images/site/apple-touch-icon.png" />
 
-    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f8f9fa" media="(prefers-color-scheme: light)" />
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
     <script src="https://unpkg.com/lucide@0.562.0" defer></script>
 
     <link rel="preload" href="js/script.js" as="script">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/publications.css">
 </head>
 
 <body id="top">
-    <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <header id="header">
-        <div class="brand">
-            <a href="terminal.html" aria-label="Open Terminal">
-                <img class="logo logo-light"
-                    src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Reversed.svg"
-                    alt="Rainier logo Reversed" />
+    <div class="gradient-bg" aria-hidden="true">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <a href="index.html#about" class="skip-link">Skip to About</a>
+
+    <div id="cursor" aria-hidden="true"></div>
+    <div id="cursor-ring" aria-hidden="true"></div>
+
+    <div class="custom-scrollbar" aria-hidden="true">
+        <div class="custom-scrollbar-thumb"></div>
+    </div>
+
+    <nav id="navbar" role="navigation" aria-label="Main navigation" data-mobile="true">
+        <div class="nav-inner">
+            <a href="terminal.html" class="nav-logo" aria-label="Open Terminal">
                 <img class="logo logo-dark"
                     src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Primary.svg"
-                    alt="Rainier Logo Primary">
+                    alt="Rainier Logo" />
+                <img class="logo logo-light"
+                    src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Reversed.svg"
+                    alt="Rainier Logo" />
             </a>
-            <h1>Rainier P. S.</h1>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#open-source">Activity</a></li>
+                <li><a href="index.html#experience-education">Experience</a></li>
+                <li><a href="index.html#skills">Skills</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="publications.html" class="active">Publications</a></li>
+                <li><a href="awards.html">Awards</a></li>
+                <li><a href="labs.html">Labs</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+            <div class="nav-right">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                </button>
+                <button class="nav-menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
         </div>
-
-        <button id="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-            <i data-lucide="menu"></i>
-        </button>
-
-        <nav id="nav-links" aria-label="Primary">
-            <a href="index.html#about">ABOUT</a>
-            <a href="index.html#experience-education">EXPERIENCE &amp; EDUCATION</a>
-            <a href="index.html#skills">SKILLS</a>
-            <a href="projects.html">PROJECTS</a>
-            <a href="publications.html" aria-current="page">PUBLICATIONS</a>
-            <a href="awards.html">AWARDS</a>
-            <a href="labs.html">LABS</a>
-            <a href="index.html#contact">CONTACT</a>
-            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-                <i data-lucide="moon"></i>
-            </button>
-        </nav>
-    </header>
+    </nav>
 
     <main id="main-content" tabindex="-1">
-        <section class="labs-hero">
-            <h2>Publications</h2>
-            <p>
-                Practical guides and tutorials, made simple and fun.<br>
-                <br>Full articles are published on <a href="https://www.instructables.com/member/Rainier-PS/"
-                    target="_blank" rel="noopener">Instructables</a>.
-            </p>
+        <section class="labs-hero reveal">
+            <div class="container">
+                <h2>Publications</h2>
+                <p>
+                    Practical guides and tutorials, made simple and fun.<br>
+                    <br>Full articles are published on <a href="https://www.instructables.com/member/Rainier-PS/"
+                        target="_blank" rel="noopener">Instructables</a>.
+                </p>
+            </div>
         </section>
 
-        <section class="max-width-wrapper">
+        <section class="container stagger">
             <div id="publications-grid" class="pub-grid" aria-live="polite">
-                <!-- Publications will be loaded here via JS -->
+                <div class="loader">Loading publications...</div>
             </div>
 
-            <div class="back-to-top-wrapper">
-                <button class="back-to-top" id="backToTop">Back to Top</button>
+            <div class="back-to-top-wrap reveal">
+                <button class="cta-btn back-to-top" id="backToTop">
+                    <span>Back to Top</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                    </svg>
+                </button>
             </div>
         </section>
     </main>
 
-    <footer>
-        <div class="links">
-            <p><strong>Quick Links</strong></p>
-            <a href="index.html#about">About</a>
-            <a href="index.html#experience-education">Experience &amp; Education</a>
-            <a href="index.html#skills">Skills</a>
-            <a href="projects.html">Projects</a>
-            <a href="publications.html">Publications</a>
-            <a href="awards.html">Awards</a>
-            <a href="labs.html">Labs</a>
-            <a href="index.html#contact">Contact</a>
+    <footer role="contentinfo">
+        <div class="footer-inner container">
+            <div class="footer-links-col">
+                <p class="footer-heading">Quick Links</p>
+                <nav class="footer-links" aria-label="Footer links">
+                    <a href="index.html#about">About</a>
+                    <a href="index.html#experience-education">Experience &amp; Education</a>
+                    <a href="index.html#skills">Skills</a>
+                    <a href="projects.html">Projects</a>
+                    <a href="publications.html">Publications</a>
+                    <a href="awards.html">Awards</a>
+                    <a href="labs.html">Labs</a>
+                    <a href="index.html#contact">Contact</a>
+                </nav>
+            </div>
+            <p class="footer-copy">© <span id="copyright-year"></span> Rainier Pearson Saputra<span
+                    class="footer-sep-dot">.</span><span class="footer-sep-bar"> | </span><span
+                    class="footer-rights">All rights reserved.</span></p>
         </div>
-        <p>© <span id="copyright-year"></span> Rainier Pearson Saputra | All rights reserved.</p>
     </footer>
 
     <script src="js/script.js" defer></script>
+    <script src="js/publications.js" defer></script>
 </body>
 
 </html>
