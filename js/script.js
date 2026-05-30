@@ -72,6 +72,8 @@ function updateSectionTops() {
 }
 
 function activateNavLink() {
+  const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || !window.location.pathname.includes('.html');
+  if (!isHomePage) return;
   let current = '';
   const scrollY = window.scrollY;
   sectionTops.forEach(s => { if (scrollY >= s.top - 140) current = s.id; });
@@ -116,10 +118,28 @@ document.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click
   $menuBtn.setAttribute('aria-expanded', 'false');
 }));
 
-const emailUser = 'rainierps8';
-const emailDomain = 'gmail.com';
 const emailLink = document.getElementById('email-link');
-if (emailLink) emailLink.href = `mailto:${emailUser}@${emailDomain}`;
+if (emailLink) {
+  const decode = (arr, key) => arr.map(n => String.fromCharCode(n ^ key)).join('');
+  const key = 117;
+  const chunks = [
+    decode([7, 20, 28, 27, 28, 16, 7], key),
+    decode([5, 6, 77], key),
+    decode([53], key),
+    decode([18, 24, 20, 28, 25, 91, 22, 26, 24], key),
+  ];
+  const buildMailto = () => 'mailto:' + chunks.join('');
+  const inject = () => { emailLink.href = buildMailto(); };
+  emailLink.addEventListener('mouseenter', inject, { once: true });
+  emailLink.addEventListener('focus', inject, { once: true });
+  emailLink.addEventListener('click', (e) => {
+    if (!emailLink.getAttribute('href')) {
+      e.preventDefault();
+      inject();
+      window.location.href = emailLink.href;
+    }
+  });
+}
 
 function initCopyrightYear() {
   const el = document.getElementById('copyright-year');
@@ -504,38 +524,46 @@ function addSwipeSupport(carousel) {
 document.addEventListener('DOMContentLoaded', async () => {
   if (window.lucide) lucide.createIcons();
 
-  const [projects, awardsData] = await Promise.all([loadProjectsFromJSON(), loadAwardsFromJSON()]);
+  const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || !window.location.pathname.includes('.html');
 
-  if (projects.length > 0) {
-    DATA.projects = projects;
-    projects.forEach(p => { projectData[p.slug] = { title: p.title, desc: p.description }; });
+  if (isHomePage) {
+    const [projects, awardsData] = await Promise.all([loadProjectsFromJSON(), loadAwardsFromJSON()]);
+
+    if (projects.length > 0) {
+      DATA.projects = projects;
+      projects.forEach(p => { projectData[p.slug] = { title: p.title, desc: p.description }; });
+    }
+    const rawAwards = Array.isArray(awardsData) ? awardsData : (awardsData.awards || awardsData.data || []);
+    if (rawAwards.length > 0) {
+      DATA.awards = rawAwards.map(item => ({
+        title: item.title || item.award || item.name || 'Untitled Award',
+        description: item.description || item.desc || item.details || item.date || '',
+        image: item.image || item.logo || null,
+        labels: item.labels || [],
+        ...item
+      }));
+    }
+
+    const projectsGrid = document.getElementById('projects-grid');
+    const awardsGrid = document.getElementById('awards-grid');
+    if (projectsGrid && DATA.projects.length > 0) renderCarousel({ containerId: 'projects-grid', items: DATA.projects, perPage: getPerPage() });
+    if (awardsGrid && DATA.awards.length > 0) renderCarousel({ containerId: 'awards-grid', items: DATA.awards, perPage: getPerPage() });
+
+    initCarousels();
+    bindLightboxImages();
   }
-  const rawAwards = Array.isArray(awardsData) ? awardsData : (awardsData.awards || awardsData.data || []);
-  if (rawAwards.length > 0) {
-    DATA.awards = rawAwards.map(item => ({
-      title: item.title || item.award || item.name || 'Untitled Award',
-      description: item.description || item.desc || item.details || item.date || '',
-      image: item.image || item.logo || null,
-      labels: item.labels || [],
-      ...item
-    }));
-  }
-
-  const projectsGrid = document.getElementById('projects-grid');
-  const awardsGrid = document.getElementById('awards-grid');
-  if (projectsGrid && DATA.projects.length > 0) renderCarousel({ containerId: 'projects-grid', items: DATA.projects, perPage: getPerPage() });
-  if (awardsGrid && DATA.awards.length > 0) renderCarousel({ containerId: 'awards-grid', items: DATA.awards, perPage: getPerPage() });
-
-  initCarousels();
-  bindLightboxImages();
 
   ScrollTrigger.refresh();
 
   window.addEventListener('resize', () => {
-    if (projectsGrid && DATA.projects.length > 0) renderCarousel({ containerId: 'projects-grid', items: DATA.projects, perPage: getPerPage() });
-    if (awardsGrid && DATA.awards.length > 0) renderCarousel({ containerId: 'awards-grid', items: DATA.awards, perPage: getPerPage() });
-    initCarousels();
-    bindLightboxImages();
+    if (isHomePage) {
+      const projectsGrid = document.getElementById('projects-grid');
+      const awardsGrid = document.getElementById('awards-grid');
+      if (projectsGrid && DATA.projects.length > 0) renderCarousel({ containerId: 'projects-grid', items: DATA.projects, perPage: getPerPage() });
+      if (awardsGrid && DATA.awards.length > 0) renderCarousel({ containerId: 'awards-grid', items: DATA.awards, perPage: getPerPage() });
+      initCarousels();
+      bindLightboxImages();
+    }
     ScrollTrigger.refresh();
   });
 });
@@ -603,6 +631,108 @@ function initGitHubGraph() {
   const tooltip = document.getElementById('tooltip');
   const yearSelect = document.getElementById('yearSelect');
   const yearButtons = document.getElementById('yearButtons');
+  let activeCell = null;
+
+  if (tooltip && tooltip.parentElement !== document.body) {
+    document.body.appendChild(tooltip);
+  }
+
+  function getWeekStride() {
+    const weeks = calendar.querySelectorAll('.week');
+    if (weeks.length < 2) {
+      const week = weeks[0];
+      return week ? week.getBoundingClientRect().width + 3 : 17;
+    }
+    const a = weeks[0].getBoundingClientRect().left;
+    const b = weeks[1].getBoundingClientRect().left;
+    return b - a;
+  }
+
+  function positionTooltip(cell) {
+    if (!tooltip || !cell) return;
+    const rect = cell.getBoundingClientRect();
+    const gap = 10;
+
+    tooltip.classList.add('is-visible');
+    tooltip.style.visibility = 'hidden';
+    const tw = tooltip.offsetWidth || 100;
+    const th = tooltip.offsetHeight || 28;
+    tooltip.style.visibility = '';
+
+    let left = rect.left + rect.width / 2 - tw / 2;
+    let top = rect.top - th - gap;
+    if (top < 8) top = rect.bottom + gap;
+    left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  }
+
+  function hideTooltip() {
+    if (!tooltip) return;
+    tooltip.classList.remove('is-visible');
+    if (activeCell) activeCell.classList.remove('is-tapped');
+    activeCell = null;
+  }
+
+  function bindDayCell(cell, count, date) {
+    const label = `${count} on ${date}`;
+    cell.dataset.contrib = '1';
+    cell.dataset.label = label;
+    cell.setAttribute('aria-label', `${count} contributions on ${date}`);
+    cell.setAttribute('tabindex', '0');
+    cell.setAttribute('role', 'button');
+
+    const show = () => {
+      if (activeCell && activeCell !== cell) activeCell.classList.remove('is-tapped');
+      activeCell = cell;
+      cell.classList.add('is-tapped');
+      tooltip.textContent = label;
+      positionTooltip(cell);
+    };
+
+    cell.addEventListener('mouseenter', show);
+    cell.addEventListener('mouseleave', hideTooltip);
+    cell.addEventListener('focus', show);
+    cell.addEventListener('blur', hideTooltip);
+  }
+
+  function handleMobileTap(cell) {
+    const label = cell.dataset.label;
+    if (!label) return;
+    if (activeCell === cell && tooltip.classList.contains('is-visible')) {
+      hideTooltip();
+      return;
+    }
+    if (activeCell && activeCell !== cell) activeCell.classList.remove('is-tapped');
+    activeCell = cell;
+    cell.classList.add('is-tapped');
+    tooltip.textContent = label;
+    positionTooltip(cell);
+  }
+
+  calendar.addEventListener('touchend', (e) => {
+    const cell = e.target.closest('.day[data-contrib]');
+    if (!cell) return;
+    e.stopPropagation();
+    handleMobileTap(cell);
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    if (e.target.closest('.day[data-contrib]')) return;
+    hideTooltip();
+  }, { passive: true });
+
+  document.querySelectorAll('.contributions-wrap, .graph-layout').forEach(el => {
+    el.addEventListener('scroll', hideTooltip, { passive: true });
+  });
+
+  window.addEventListener('scroll', () => {
+    if (activeCell && tooltip.classList.contains('is-visible')) positionTooltip(activeCell);
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (activeCell && tooltip.classList.contains('is-visible')) positionTooltip(activeCell);
+  }, { passive: true });
 
   function level(count) {
     if (count >= 8) return 5;
@@ -613,6 +743,7 @@ function initGitHubGraph() {
   }
 
   function buildYearButtons(active) {
+    if (!yearButtons) return;
     yearButtons.innerHTML = '';
     YEARS.forEach(y => {
       const btn = document.createElement('button');
@@ -624,7 +755,9 @@ function initGitHubGraph() {
   }
 
   async function loadYear(year) {
-    calendar.innerHTML = ''; monthsRow.innerHTML = '';
+    calendar.innerHTML = '';
+    monthsRow.innerHTML = '';
+    hideTooltip();
     summary.textContent = 'Loading…';
     yearSelect.value = year;
     buildYearButtons(year);
@@ -652,20 +785,7 @@ function initGitHubGraph() {
         const cell = document.createElement('div');
         const lvl = level(d.count);
         cell.className = 'day' + (lvl ? ` lvl-${lvl}` : '');
-        cell.setAttribute('aria-label', `${d.count} contributions on ${d.date}`);
-        cell.onmouseenter = () => { tooltip.textContent = `${d.count} on ${d.date}`; tooltip.style.opacity = 1; };
-        cell.onmousemove = e => {
-          const tooltipWidth = tooltip.offsetWidth || 120;
-          const gap = 12;
-          let left = e.clientX + gap;
-          let top = e.clientY - 12;
-          if (left + tooltipWidth > window.innerWidth) {
-            left = e.clientX - tooltipWidth - gap;
-          }
-          tooltip.style.left = left + 'px';
-          tooltip.style.top = top + 'px';
-        };
-        cell.onmouseleave = () => { tooltip.style.opacity = 0; };
+        bindDayCell(cell, d.count, d.date);
         week.appendChild(cell);
         if (date.getDay() === 6) {
           calendar.appendChild(week);
@@ -679,7 +799,7 @@ function initGitHubGraph() {
       Object.entries(monthStarts).forEach(([m, startIndex]) => {
         const label = document.createElement('div');
         label.className = 'month';
-        label.style.left = `${startIndex * 17}px`; // 14px day + 3px gap = 17px
+        label.style.left = `${startIndex * getWeekStride()}px`;
         label.textContent = new Date(2024, m).toLocaleString('en', { month: 'short' });
         monthsRow.appendChild(label);
       });
