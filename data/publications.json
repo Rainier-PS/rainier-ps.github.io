@@ -4,34 +4,39 @@
     "description": "A DIY automated fish feeder controlled via WiFi using an ESP32 and Telegram integration.",
     "url": "https://www.instructables.com/Smart-WiFi-Fish-Feeder/",
     "icon": "wifi",
-    "tags": ["ESP32", "IoT", "Telegram", "Automation"]
+    "tags": ["ESP32", "IoT", "Telegram", "Automation"],
+    "date": "2025-09-29"
   },
   {
     "title": "ESP32 WiFi New Year Countdown Timer",
     "description": "Build a synchronized countdown timer using ESP32 that fetches precise time from the internet.",
     "url": "https://www.instructables.com/ESP32-WiFi-New-Year-Countdown-Timer-Beginner-Frien/",
     "icon": "timer",
-    "tags": ["ESP32", "WiFi", "Display", "Time"]
+    "tags": ["ESP32", "WiFi", "Display", "Time"],
+    "date": "2025-12-21"
   },
   {
-    "title": "Beginner’s Guide to Arduino – Part 1",
+    "title": "Beginner's Guide to Arduino – Part 1",
     "description": "Learning Arduino basics and electronics concepts without needing a physical board (Simulation).",
     "url": "https://www.instructables.com/Beginners-Guide-to-Arduino-Part-1-Learning-Arduino/",
     "icon": "cpu",
-    "tags": ["Arduino", "Simulation", "Basics"]
+    "tags": ["Arduino", "Simulation", "Basics"],
+    "date": "2025-10-04"
   },
   {
-    "title": "Beginner’s Guide to Arduino – Part 2",
+    "title": "Beginner's Guide to Arduino – Part 2",
     "description": "Building your first real circuits and understanding breadboards and basic components.",
     "url": "https://www.instructables.com/Beginners-Guide-to-Arduino-Part-2-Building-Your-Fi/",
     "icon": "zap",
-    "tags": ["Arduino", "Circuits", "Hardware"]
+    "tags": ["Arduino", "Circuits", "Hardware"],
+    "date": "2025-12-16"
   },
   {
-    "title": "Beginner’s Guide to Arduino – Part 3",
+    "title": "Beginner's Guide to Arduino – Part 3",
     "description": "Exploring sensors, serial communication, and more advanced interaction techniques.",
     "url": "https://www.instructables.com/Beginners-Guide-to-Arduino-Part-3-Sensors-Communic/",
     "icon": "radio",
-    "tags": ["Arduino", "Sensors", "Serial"]
+    "tags": ["Arduino", "Sensors", "Serial"],
+    "date": "2025-12-16"
   }
 ]
