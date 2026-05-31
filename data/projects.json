@@ -2,7 +2,7 @@
   {
     "title": "Invitation Website Template",
     "description": "A free, modern, and responsive invitation website template built with HTML, CSS, and vanilla JavaScript. Easily customizable via a single JSON file.",
-    "image": "/images/projects/Invitation-Template.avif",
+    "image": "https://raw.githubusercontent.com/Rainier-PS/Invitation-Template/main/media/images/Thumbnail.avif",
     "tags": ["Software", "Open Source", "Website"],
     "demo": "https://rainier-ps.github.io/Invitation-Template/",
     "github": "https://github.com/Rainier-PS/Invitation-Template",
@@ -11,7 +11,7 @@
   {
     "title": "DIY Bluetooth Mechanical Keyboard",
     "description": "This custom-designed DIY Bluetooth mechanical keyboard features hot-swappable switches, USB-C, a slide potentiometer, built-in NFC, and a 6° ergonomic tilt with wrist rest.",
-    "image": "/images/projects/DIY-Bluetooth-Mechanical-Keyboard.avif",
+    "image": "https://raw.githubusercontent.com/Rainier-PS/DIY-Bluetooth-Mechanical-Keyboard/refs/heads/main/images/3D%20Model.avif",
     "tags": ["Hardware", "Nice!Nano V2", "Mechanical"],
     "demo": "https://github.com/Rainier-PS/DIY-Bluetooth-Mechanical-Keyboard",
     "github": "https://github.com/Rainier-PS/DIY-Bluetooth-Mechanical-Keyboard",
@@ -20,7 +20,7 @@
   {
     "title": "Hackpad",
     "description": "A DIY custom macropad built using a Xiao RP2040 for Hack Club's Highway to Undercity event.",
-    "image": "/images/projects/Hackpad-Rainier.avif",
+    "image": "https://raw.githubusercontent.com/Rainier-PS/Hackpad-Rainier/refs/heads/main/images/CAD.avif",
     "tags": ["Hardware", "RP2040", "Mechanical"],
     "demo": "https://github.com/Rainier-PS/Hackpad-Rainier",
     "github": "https://github.com/Rainier-PS/Hackpad-Rainier",
@@ -29,7 +29,7 @@
   {
     "title": "DogFace PCB Art Keychain",
     "description": "A dog-shaped interactive PCB art keychain with LEDs, buttons, a vibration motor, and a custom outline — made with KiCad.",
-    "image": "/images/projects/DogFace-PCB-Art.avif",
+    "image": "https://raw.githubusercontent.com/Rainier-PS/DogFace-PCB-Art/refs/heads/main/images/3D%20Model.avif",
     "tags": ["Hardware", "PCB", "Mechanical"],
     "demo": "https://github.com/Rainier-PS/DogFace-PCB-Art",
     "github": "https://github.com/Rainier-PS/DogFace-PCB-Art",
@@ -38,7 +38,7 @@
   {
     "title": "Smart Light-Based Canopy System",
     "description": "An eco-friendly smart home prototype using a light dependent resistor (LDR) and Arduino Uno.",
-    "image": "/images/projects/Light-Based-Canopy-System.avif",
+    "image": "https://raw.githubusercontent.com/Rainier-PS/Light-Based-Canopy-System/refs/heads/main/images/site/Front-View.avif",
     "tags": ["Hardware", "Arduino", "Sustainability"],
     "demo": "https://rainier-ps.github.io/Light-Based-Canopy-System/",
     "github": "https://github.com/Rainier-PS/Light-Based-Canopy-System",
@@ -47,7 +47,7 @@
   {
     "title": "Smart WiFi Fish Feeder",
     "description": "A smart WiFi controlled fish feeder device built using an ESP32 devboard and a SG90 servo.",
-    "image": "/images/projects/Smart-WiFi-Fish-Feeder.avif",
+    "image": "https://raw.githubusercontent.com/Rainier-PS/Smart-WiFi-Fish-Feeder/refs/heads/main/images/Smart%20WiFi%20Fish%20Feeder.avif",
     "tags": ["Hardware", "ESP32", "IoT"],
     "demo": "https://github.com/Rainier-PS/Smart-WiFi-Fish-Feeder",
     "github": "https://github.com/Rainier-PS/Smart-WiFi-Fish-Feeder",
@@ -56,7 +56,7 @@
   {
     "title": "SoundTune",
     "description": "SoundTune is an Android application that automatically adjusts media volume based on ambient noise levels for a seamless audio experience.",
-    "image": "/images/projects/SoundTune.avif",
+    "image": "https://raw.githubusercontent.com/Rainier-PS/SoundTune/refs/heads/master/SoundTune_Icon.avif",
     "tags": ["Software", "Android", "App"],
     "demo": "https://github.com/Rainier-PS/SoundTune",
     "github": "https://github.com/Rainier-PS/SoundTune",
