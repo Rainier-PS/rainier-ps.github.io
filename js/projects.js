@@ -1,6 +1,112 @@
 const DEMO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:13px;height:13px;display:inline-block;flex-shrink:0;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
 const GITHUB_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:13px;height:13px;display:inline-block;flex-shrink:0;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>';
 
+const SORT_OPTIONS = [
+    { value: 'default',   label: 'Default' },
+    { value: 'date-desc', label: 'Newest' },
+    { value: 'date-asc',  label: 'Oldest' },
+    { value: 'az',        label: 'A–Z' },
+    { value: 'za',        label: 'Z–A' },
+];
+
+const SORTERS = {
+    'default':   () => 0,
+    'date-desc': (a, b) => b._date - a._date,
+    'date-asc':  (a, b) => a._date - b._date,
+    'az':        (a, b) => a.title.localeCompare(b.title),
+    'za':        (a, b) => b.title.localeCompare(a.title),
+};
+
+function parseDateMs(str) {
+    return str ? new Date(str).getTime() : 0;
+}
+
+function formatDate(str) {
+    if (!str) return '';
+    const d = new Date(str + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function initSortUI(sortBarId, onSort) {
+    const bar = document.getElementById(sortBarId);
+    if (!bar) return { value: 'date-desc' };
+
+    bar.innerHTML = '';
+
+    const label = document.createElement('span');
+    label.className = 'sort-label';
+    label.textContent = 'Sort by';
+
+    const select = document.createElement('select');
+    select.className = 'sort-select';
+    select.setAttribute('aria-label', 'Sort order');
+
+    SORT_OPTIONS.forEach(opt => {
+        const el = document.createElement('option');
+        el.value = opt.value;
+        el.textContent = opt.label;
+        select.appendChild(el);
+    });
+
+    select.addEventListener('change', () => onSort(select.value));
+
+    bar.appendChild(label);
+    bar.appendChild(select);
+
+    return select;
+}
+
+function sortData(data, key) {
+    return [...data].sort(SORTERS[key] || SORTERS['date-desc']);
+}
+
+function renderProjectCard(project) {
+    const card = document.createElement('div');
+    card.className = 'proj-card project-card';
+
+    const tagsHtml = project.tags && project.tags.length
+        ? `<div class="proj-labels">${project.tags.map(t => `<span class="proj-label">${t}</span>`).join('')}</div>`
+        : '';
+
+    const dateLabel = formatDate(project.date);
+    const dateHtml = dateLabel
+        ? `<span class="proj-date" aria-label="Published ${dateLabel}">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="12" height="12"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+               <span class="proj-date-tooltip">${dateLabel}</span>
+           </span>`
+        : '';
+
+    const buttonsHtml = (project.demo || project.github)
+        ? `<div class="proj-buttons">
+               ${project.demo   ? `<a href="${project.demo}"   class="proj-btn" target="_blank" rel="noopener"><span>Demo</span>${DEMO_ICON}</a>`   : ''}
+               ${project.github ? `<a href="${project.github}" class="proj-btn" target="_blank" rel="noopener"><span>GitHub</span>${GITHUB_ICON}</a>` : ''}
+           </div>`
+        : '';
+
+    card.innerHTML = `
+        ${project.image ? `<img src="${project.image}" alt="${project.title}" loading="lazy" decoding="async" data-date="${dateLabel}">` : ''}
+        <div class="proj-card-body">
+            <div class="proj-card-header">
+                <h3>${project.title}</h3>
+                ${dateHtml}
+            </div>
+            <p>${project.description || ''}</p>
+            ${tagsHtml}
+            ${buttonsHtml}
+        </div>
+    `;
+    return card;
+}
+
+function renderGrid(grid, data) {
+    grid.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    data.forEach(p => frag.appendChild(renderProjectCard(p)));
+    grid.appendChild(frag);
+    initLightbox();
+    if (window.ScrollTrigger) ScrollTrigger.refresh();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadProjects();
 });
@@ -13,64 +119,42 @@ async function loadProjects() {
         let res;
         try {
             res = await fetch('data/projects.json');
-            if (!res.ok) throw new Error('Local fetch failed');
-        } catch (e) {
-            console.warn('Local fetch failed, trying remote...', e);
+            if (!res.ok) throw new Error();
+        } catch {
             res = await fetch('https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/data/projects.json');
         }
 
         if (!res.ok) throw new Error('Failed to load projects');
-        const projects = await res.json();
+        const raw = await res.json();
 
-        grid.innerHTML = '';
+        const projects = raw.map(p => ({ ...p, _date: parseDateMs(p.date) }));
 
-        projects.forEach(project => {
-            const card = document.createElement('div');
-            card.className = 'proj-card project-card';
-
-            const labelsHtml = project.labels && project.labels.length
-                ? `<div class="proj-labels">${project.labels.map(l => `<span class="proj-label">${l}</span>`).join('')}</div>`
-                : '';
-
-            const buttonsHtml = (project.demo || project.github)
-                ? `<div class="proj-buttons">
-                     ${project.demo ? `<a href="${project.demo}" class="proj-btn" target="_blank" rel="noopener"><span>Demo</span>${DEMO_ICON}</a>` : ''}
-                     ${project.github ? `<a href="${project.github}" class="proj-btn" target="_blank" rel="noopener"><span>GitHub</span>${GITHUB_ICON}</a>` : ''}
-                   </div>`
-                : '';
-
-            card.innerHTML = `
-                ${project.image ? `<img src="${project.image}" alt="${project.title}" loading="lazy" decoding="async">` : ''}
-                <div class="proj-card-body">
-                    <h3>${project.title}</h3>
-                    <p>${project.description}</p>
-                    ${labelsHtml}
-                    ${buttonsHtml}
-                </div>
-            `;
-            grid.appendChild(card);
+        const sortSelect = initSortUI('sort-bar', key => {
+            renderGrid(grid, sortData(projects, key));
         });
 
-        initLightbox();
-        if (window.ScrollTrigger) ScrollTrigger.refresh();
+        renderGrid(grid, sortData(projects, sortSelect.value));
 
     } catch (err) {
         console.error('Project loading error:', err);
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Unable to load projects at this time.</p>';
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);">Unable to load projects at this time.</p>';
     }
 }
 
 function initLightbox() {
-    const lightbox = document.getElementById('imageLightbox');
+    const lightbox    = document.getElementById('imageLightbox');
     const lightboxImg = document.getElementById('lightboxImg');
-    const closeBtn = document.getElementById('closeLightbox');
-    const openBtn = document.getElementById('openInNewTab');
+    const closeBtn    = document.getElementById('closeLightbox');
+    const openBtn     = document.getElementById('openInNewTab');
 
     if (!lightbox || !lightboxImg) return;
 
     document.querySelectorAll('.project-card img').forEach(img => {
         img.addEventListener('click', () => {
             lightboxImg.src = img.src;
+            const date = img.dataset.date;
+            const dateBadge = lightbox.querySelector('.lightbox-date');
+            if (dateBadge) dateBadge.textContent = date || '';
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
         });
@@ -82,17 +166,10 @@ function initLightbox() {
     };
 
     if (closeBtn) closeBtn.addEventListener('click', close);
-    lightbox.addEventListener('click', e => {
-        if (e.target === lightbox) close();
-    });
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') close();
+    if (openBtn) openBtn.addEventListener('click', () => {
+        if (lightboxImg.src) window.open(lightboxImg.src, '_blank');
     });
-
-    if (openBtn) {
-        openBtn.addEventListener('click', () => {
-            if (lightboxImg.src) window.open(lightboxImg.src, '_blank');
-        });
-    }
 }
