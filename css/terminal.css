@@ -72,8 +72,20 @@ body.terminal-body .terminal {
     margin: 0;
 }
 
+.terminal-input-line {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.prompt {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .terminal-input {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     background: #000;
     color: var(--terminal-color);
     border: none;

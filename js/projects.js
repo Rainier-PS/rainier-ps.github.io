@@ -1,65 +1,6 @@
 const DEMO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:13px;height:13px;display:inline-block;flex-shrink:0;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
 const GITHUB_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:13px;height:13px;display:inline-block;flex-shrink:0;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>';
 
-const SORT_OPTIONS = [
-    { value: 'default',   label: 'Default' },
-    { value: 'date-desc', label: 'Newest' },
-    { value: 'date-asc',  label: 'Oldest' },
-    { value: 'az',        label: 'A–Z' },
-    { value: 'za',        label: 'Z–A' },
-];
-
-const SORTERS = {
-    'default':   () => 0,
-    'date-desc': (a, b) => b._date - a._date,
-    'date-asc':  (a, b) => a._date - b._date,
-    'az':        (a, b) => a.title.localeCompare(b.title),
-    'za':        (a, b) => b.title.localeCompare(a.title),
-};
-
-function parseDateMs(str) {
-    return str ? new Date(str).getTime() : 0;
-}
-
-function formatDate(str) {
-    if (!str) return '';
-    const d = new Date(str + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-}
-
-function initSortUI(sortBarId, onSort) {
-    const bar = document.getElementById(sortBarId);
-    if (!bar) return { value: 'date-desc' };
-
-    bar.innerHTML = '';
-
-    const label = document.createElement('span');
-    label.className = 'sort-label';
-    label.textContent = 'Sort by';
-
-    const select = document.createElement('select');
-    select.className = 'sort-select';
-    select.setAttribute('aria-label', 'Sort order');
-
-    SORT_OPTIONS.forEach(opt => {
-        const el = document.createElement('option');
-        el.value = opt.value;
-        el.textContent = opt.label;
-        select.appendChild(el);
-    });
-
-    select.addEventListener('change', () => onSort(select.value));
-
-    bar.appendChild(label);
-    bar.appendChild(select);
-
-    return select;
-}
-
-function sortData(data, key) {
-    return [...data].sort(SORTERS[key] || SORTERS['date-desc']);
-}
-
 function renderProjectCard(project) {
     const card = document.createElement('div');
     card.className = 'proj-card project-card';
@@ -142,34 +83,5 @@ async function loadProjects() {
 }
 
 function initLightbox() {
-    const lightbox    = document.getElementById('imageLightbox');
-    const lightboxImg = document.getElementById('lightboxImg');
-    const closeBtn    = document.getElementById('closeLightbox');
-    const openBtn     = document.getElementById('openInNewTab');
-
-    if (!lightbox || !lightboxImg) return;
-
-    document.querySelectorAll('.project-card img').forEach(img => {
-        img.addEventListener('click', () => {
-            lightboxImg.src = img.src;
-            const date = img.dataset.date;
-            const dateBadge = lightbox.querySelector('.lightbox-date');
-            if (dateBadge) dateBadge.textContent = date || '';
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-    });
-
-    const close = () => {
-        lightbox.classList.remove('active');
-        document.body.style.overflow = '';
-    };
-
-    if (closeBtn) closeBtn.addEventListener('click', close);
-    lightbox.addEventListener('click', e => { if (e.target === lightbox) close(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-
-    if (openBtn) openBtn.addEventListener('click', () => {
-        if (lightboxImg.src) window.open(lightboxImg.src, '_blank');
-    });
+    bindLightboxImages('.project-card img');
 }
