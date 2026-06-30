@@ -1,5 +1,3 @@
-/* Terminal Page Styles */
-
 body.terminal-body {
     background-color: #000;
     margin: 0;
@@ -61,7 +59,7 @@ body.terminal-body .terminal {
 
 .terminal-output {
     height: calc(100% - 70px);
-    /* header + input */
+    
     overflow-y: auto;
     white-space: pre-wrap;
 }
@@ -96,7 +94,6 @@ body.terminal-body .terminal {
     box-shadow: none !important;
 }
 
-/* Matrix Mode */
 body.matrix-mode .terminal {
     --terminal-color: #0f0 !important;
     --terminal-btn-color: #0f0 !important;

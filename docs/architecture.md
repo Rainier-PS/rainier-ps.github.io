@@ -36,19 +36,16 @@ The site serves as a personal portfolio showcasing projects, awards, publication
 ├── README.md               # Quick-start readme
 │
 ├── css/
-│   ├── styles.css          # Global styles (theming, layout, components)
-│   ├── awards.css          # Awards page grid layout
+│   ├── styles.css          # Global styles (theming, layout, components, page grids)
 │   ├── labs.css            # Pixel art sandbox styling
-│   ├── projects.css        # Projects page grid layout
-│   ├── publications.css    # Publications card layout
 │   └── terminal.css        # Terminal page styling
 │
 ├── js/
 │   ├── script.js           # Global script (shared logic, animations, carousel, GitHub graph)
-│   ├── awards.js           # Awards page: load, sort, render, lightbox
+│   ├── awards.js           # Awards page: card renderer, delegates to initContentPage()
 │   ├── labs.js             # Pixel art canvas sandbox
-│   ├── projects.js         # Projects page: load, sort, render, lightbox
-│   ├── publications.js     # Publications page: load, sort, render
+│   ├── projects.js         # Projects page: card renderer, delegates to initContentPage()
+│   ├── publications.js     # Publications page: card renderer, delegates to initContentPage()
 │   └── terminal.js         # Terminal emulator: commands, boot sequence
 │
 ├── data/
@@ -58,8 +55,7 @@ The site serves as a personal portfolio showcasing projects, awards, publication
 │
 ├── images/
 │   ├── site/               # Site branding assets (logo variants, avatar, favicon)
-│   ├── certificates/       # Award certificate images (AVIF format)
-│   └── devlogs/            # Development log images (PNG)
+│   └── certificates/       # Award certificate images (AVIF format)
 │
 └── docs/
     └── architecture.md     # This documentation file
@@ -78,14 +74,14 @@ The site is fully static — all content is fetched client-side from JSON files 
 
 ### Data Loading Pattern
 
-Each content page follows a consistent pattern:
+Each content page follows a consistent pattern via the shared `initContentPage()` function in `script.js`:
 
 1. Page loads → `script.js` executes global setup (theme, cursor, nav, animations)
-2. Page-specific JS executes: `loadProjects()`, `loadAwards()`, `loadPublications()`
+2. Page-specific JS calls `initContentPage()` with a config object (grid ID, data URL, render function)
 3. JSON is fetched from local path first (`data/projects.json`), with a fallback to the raw GitHub URL
 4. Data is sorted by user-selected sort option
 5. Cards/items are rendered into a grid via `document.createDocumentFragment()`
-6. Lightbox events are bound to images
+6. After-render callback binds lightbox or other post-render logic
 
 ```mermaid
 flowchart LR
@@ -94,10 +90,11 @@ flowchart LR
     B --> D[Theme / Nav / Cursor]
     B --> E[GSAP Animations]
     B --> F[GitHub Graph]
-    C --> G[Fetch JSON]
-    G --> H[Sort]
-    H --> I[Render Grid]
-    I --> J[Lightbox]
+    C --> G[initContentPage config]
+    G --> H[Fetch JSON]
+    H --> I[Sort]
+    I --> J[Render Grid via renderFn]
+    J --> K[afterRender callback]
 ```
 
 ---
@@ -126,10 +123,6 @@ The theme toggle in `script.js`:
 - Reads `localStorage.getItem('theme')` on load, falls back to `prefers-color-scheme`
 - Toggles via `document.documentElement.setAttribute('data-theme', next)`
 - Uses the **View Transition API** (`document.startViewTransition`) for a smooth circle-wipe animation between themes
-
-### Theme Persistence
-
-Theme state is stored in `localStorage` key `theme`. Accent color is stored in `localStorage` key `accent-color` (used by the terminal's `accent` command).
 
 ---
 
@@ -180,80 +173,69 @@ Theme state is stored in `localStorage` key `theme`. Accent color is stored in `
 
 - Full command-line interface simulation
 - Boot sequence with typing effect
-- Commands: `help`, `about`, `ls`, `cat`, `echo`, `date`, `who`, `whoami`, `clear`, `history`, `color`, `gh`, `theme`, `accent`, `restore`, `matrix`, `exit`, `repo`, `dev`, `view`
+- Commands: `help`, `about`, `ls`, `cat`, `echo`, `date`, `who`, `whoami`, `clear`, `history`, `exit`
 - Command history with arrow key navigation
-- Matrix visual effect toggle
-- Custom accent/color commands
-- Fetches GitHub contribution data
+- Tab completion for file paths
 
 ### Lightbox
 
 - Modal overlay for image preview
+- Focus trap to keep keyboard navigation within the modal
 - Close on backdrop click or Escape key
 - "Open in New Tab" button
 - Date badge display (awards/projects pages)
 - Body scroll lock when open
+- Returns focus to triggering element on close
 
 ---
 
 ## JavaScript Architecture
 
-### script.js (Global, ~550 lines)
+### script.js (Global)
 
 Loaded on all pages with `defer`. Responsibilities:
 
-| Module | Lines | Description |
-|--------|-------|-------------|
-| Theme toggle | ~40 | View-transition-aware dark/light switching |
-| Custom cursor | ~25 | GSAP-powered cursor + ring follower |
-| Nav scroll | ~30 | Scroll-aware nav pill transformation |
-| Nav mobile | ~25 | Hamburger menu, outside-click close, Escape key |
-| Email obfuscation | ~20 | XOR-encoded email decryption on interaction |
-| Hero animation | ~30 | GSAP timeline + typewriter |
-| Orb parallax | ~25 | Mouse-following gradient orbs |
-| Marquee | ~40 | Infinite-scrolling text marquee |
-| Scroll reveals | ~35 | GSAP ScrollTrigger entry animations |
-| Home carousel | ~100 | Data loading, rendering, carousel logic |
-| Lightbox | ~40 | Global lightbox for homepage carousel |
-| Back-to-top | ~5 | Smooth scroll to top |
-| Custom scrollbar | ~25 | Draggable custom scrollbar |
-| GitHub graph | ~130 | Contribution grid renderer |
+| Module | Description |
+|--------|-------------|
+| Theme toggle | View-transition-aware dark/light switching |
+| Custom cursor | GSAP-powered cursor + ring follower |
+| Nav scroll | Scroll-aware nav pill transformation |
+| Nav mobile | Hamburger menu, outside-click close, Escape key |
+| Email obfuscation | XOR-encoded email decryption on interaction |
+| Hero animation | GSAP timeline + typewriter |
+| Orb parallax | Mouse-following gradient orbs |
+| Marquee | Infinite-scrolling text marquee |
+| Scroll reveals | GSAP ScrollTrigger entry animations |
+| Content page logic | `initContentPage()`, `renderContentGrid()` — shared data loading & rendering |
+| Home carousel | Data loading, rendering, carousel logic |
+| Lightbox | Global lightbox with focus trap |
+| Back-to-top | Smooth scroll to top |
+| Custom scrollbar | Draggable custom scrollbar |
+| GitHub graph | Contribution grid renderer |
+| Shared utilities | `SORT_OPTIONS`, `SORTERS`, `parseDateMs`, `formatDate`, `initSortUI`, `sortData`, `DEMO_ICON`, `GITHUB_ICON` |
 
 ### Page-specific Scripts
 
-Each is ~150-200 lines and follows the same pattern:
+Each page-specific script is minimal (~30-55 lines), containing only:
+- A `DOMContentLoaded` listener calling `initContentPage()` with a config object
+- A render function (`renderAwardCard`, `renderProjectCard`, `renderPubCard`)
 
-1. Define `SORT_OPTIONS` and `SORTERS` (duplicated across files)
-2. Define `parseDateMs`, `formatDate`, `initSortUI`, `sortData` (duplicated)
-3. Fetch JSON data with local→remote fallback
-4. Render cards into grid
-5. Bind lightbox (awards.js, projects.js)
-
-### Shared Utility Functions (DRY)
-
-The following utilities are defined once in `script.js` and reused:
-
-- `SORT_OPTIONS` — Standard sort option definitions
-- `SORTERS` — Sort comparator functions
-- `parseDateMs(str)` — Parse date string to timestamp
-- `formatDate(str)` — Format date to "Month Day, Year"
-- `initSortUI(sortBarId, onSort)` — Create sort dropdown UI
-- `sortData(data, key)` — Sort data array by key
-- `initLightbox()` — Bind lightbox events to page images
+The common fetch → sort → render → callback pattern is handled by the shared `initContentPage()` function, eliminating code duplication.
 
 ---
 
 ## Styling Architecture
 
-### styles.css (~1200 lines)
+### styles.css (~1250 lines)
 
-The main stylesheet containing:
+The main stylesheet containing all global and page-specific styles:
 
 - **Variables** — Design tokens for both themes
 - **Reset** — Box-sizing, margin, padding
 - **Typography** — Font families, sizes, weights
 - **Layout** — Container, sections, grids
 - **Components** — Nav, hero, cards, buttons, carousel, footer
+- **Page grids** — Project grid, award grid, publication grid, loader
 - **Effects** — Gradient orbs, noise overlay, marquee
 - **Interactive** — Custom cursor, scrollbar, tooltips
 - **Responsive** — Multi-breakpoint media queries (480, 640, 768, 1024px)
@@ -261,15 +243,10 @@ The main stylesheet containing:
 
 ### Page-specific Stylesheets
 
-Each sub-page has a minimal CSS file for its grid/card layout:
-
-| File | Used by | Purpose |
-|------|---------|---------|
-| `awards.css` | awards.html | Award card grid, `cursor: zoom-in` |
-| `projects.css` | projects.html | Project card grid |
-| `publications.css` | publications.html | Publication cards, tags, buttons |
-| `labs.css` | labs.html | Pixel art canvas, control panel, toolbar |
-| `terminal.css` | terminal.html | Terminal layout, colors, help tables |
+| File | Used by | Purpose | Size |
+|------|---------|---------|------|
+| `labs.css` | labs.html | Pixel art canvas, control panel, toolbar | ~350 lines |
+| `terminal.css` | terminal.html | Terminal layout, colors, help tables | ~160 lines |
 
 ### Key Design Patterns
 
@@ -292,13 +269,10 @@ Each sub-page has a minimal CSS file for its grid/card layout:
 - **Font display** — Google Fonts loaded with `display=swap`
 - **GSAP optimized** — `force3D: true`, `ignoreMobileResize: true`
 
-### Improvement Areas (documented from audit)
+### Known Improvement Areas
 
 - **Image dimensions** — Missing explicit `width`/`height` on some images causes CLS
-- **JS bundling** — Multiple GSAP files could be combined
-- **CSS size** — Single large stylesheet could be code-split by page
 - **Font loading** — 9 total font weights loaded, many unused
-- **CSP** — No Content Security Policy meta tag
 - **SRI** — No subresource integrity on CDN scripts
 
 ---
@@ -313,12 +287,12 @@ Each sub-page has a minimal CSS file for its grid/card layout:
 - `aria-hidden="true"` on decorative elements (WCAG 1.1.1)
 - `prefers-reduced-motion` media query (WCAG 2.3.3)
 - Semantic HTML landmarks (`<nav>`, `<main>`, `<footer>`, `<section>`)
-- Proper heading structure with `aria-labelledby` (partial)
+- Heading structure with `aria-labelledby`
+- Lightbox focus trap (WCAG 2.1.2)
+- Email obfuscation for spam prevention
 
 ### Known Gaps
 
-- Heading hierarchy: Sub-pages use `<h2>` as their primary heading (should be `<h1>`)
-- Lightbox focus management: Focus not trapped inside lightbox
 - Carousel keyboard navigation: No arrow key support for slides
 - Color contrast: Some muted text may fail WCAG AA
 
@@ -378,14 +352,13 @@ Each sub-page has a minimal CSS file for its grid/card layout:
 
 - Email obfuscation via XOR cipher in JavaScript
 - `rel="noopener"` on all external links with `target="_blank"`
+- Content-Security-Policy meta tag on all pages
 - No tracking scripts, analytics, or third-party cookies
 - All external resources use HTTPS
 
 ### Recommendations
 
-- Add Content-Security-Policy meta tag
 - Add Subresource Integrity hashes to CDN scripts
-- Consider CSP `frame-ancestors 'none'` via GitHub Pages `_headers` file
 
 ---
 
@@ -395,7 +368,6 @@ Each sub-page has a minimal CSS file for its grid/card layout:
 - **Domain:** `rainier-ps.github.io` (GitHub-provided subdomain)
 - **HTTPS:** Enforced by GitHub Pages with auto-renewing Let's Encrypt certificates
 - **Deployment:** Push to `main` branch → automatic deployment
-- **Custom domain:** Not configured (uses default github.io)
 
 ---
 

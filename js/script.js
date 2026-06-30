@@ -1,5 +1,8 @@
 'use strict';
 
+const DEMO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:13px;height:13px;display:inline-block;flex-shrink:0;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
+const GITHUB_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:13px;height:13px;display:inline-block;flex-shrink:0;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>';
+
 const MARQUEE_WORDS = [
   'Engineering', 'Python', '3D Printing', 'Arduino', 'JavaScript',
   'PCB Design', 'Robotics', 'STEM', 'Hack Club', 'KiCad', 'Fusion 360'
@@ -360,6 +363,41 @@ function sortData(data, key) {
   return [...data].sort(SORTERS[key] || SORTERS['date-desc']);
 }
 
+async function initContentPage(config) {
+  const grid = document.getElementById(config.gridId);
+  if (!grid) return;
+
+  try {
+    let res;
+    try {
+      res = await fetch(config.dataUrl);
+      if (!res.ok) throw new Error();
+    } catch {
+      res = await fetch(config.fallbackUrl);
+    }
+    if (!res.ok) throw new Error('Failed');
+
+    const raw = await res.json();
+    const items = raw.map(item => ({ ...item, _date: parseDateMs(item.date) }));
+
+    const sortSelect = initSortUI(config.sortBarId, key => renderContentGrid(grid, items, key, config));
+    renderContentGrid(grid, items, sortSelect.value, config);
+  } catch (err) {
+    console.error(config.errorPrefix + ':', err);
+    grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);">${config.errorMessage}</p>`;
+  }
+}
+
+function renderContentGrid(grid, items, sortKey, config) {
+  const sorted = sortData(items, sortKey);
+  grid.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  sorted.forEach(item => frag.appendChild(config.renderFn(item)));
+  grid.appendChild(frag);
+  if (config.afterRender) config.afterRender();
+  if (window.ScrollTrigger) ScrollTrigger.refresh();
+}
+
 const DATA = { projects: [], awards: [] };
 const projectData = {};
 
@@ -631,6 +669,7 @@ const lightbox = document.getElementById('imageLightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const closeBtn = document.getElementById('closeLightbox');
 const openBtn = document.getElementById('openInNewTab');
+let lastFocusedBeforeLightbox = null;
 
 function bindLightboxImages(selector) {
   const sel = selector || '#projects .proj-card img, #awards .proj-card img';
@@ -638,10 +677,10 @@ function bindLightboxImages(selector) {
     img.style.cursor = 'zoom-in';
     img.addEventListener('click', () => {
       lightboxImg.src = img.src;
-      const dateBadge = lightbox.querySelector('.lightbox-date');
-      if (dateBadge) dateBadge.textContent = img.dataset.date || '';
+      lastFocusedBeforeLightbox = document.activeElement;
       lightbox.classList.add('active');
       document.body.style.overflow = 'hidden';
+      closeBtn?.focus();
     });
   });
 }
@@ -649,13 +688,30 @@ function bindLightboxImages(selector) {
 function closeLightbox() {
   lightbox.classList.remove('active');
   document.body.style.overflow = '';
+  if (lastFocusedBeforeLightbox) {
+    lastFocusedBeforeLightbox.focus();
+    lastFocusedBeforeLightbox = null;
+  }
 }
+
+const lightboxFocusable = closeBtn && openBtn ? [closeBtn, openBtn] : [];
 
 closeBtn?.addEventListener('click', closeLightbox);
 openBtn?.addEventListener('click', () => { if (lightboxImg.src) window.open(lightboxImg.src, '_blank', 'noopener'); });
 lightbox?.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
 document.addEventListener('keydown', e => {
   if ((e.key === 'Escape' || e.key === 'Esc') && lightbox?.classList.contains('active')) closeLightbox();
+  if (e.key === 'Tab' && lightbox?.classList.contains('active') && lightboxFocusable.length) {
+    const first = lightboxFocusable[0];
+    const last = lightboxFocusable[lightboxFocusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 });
 
 const backToTopBtn = document.getElementById('backToTop');
