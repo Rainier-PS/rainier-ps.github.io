@@ -17,16 +17,48 @@
     '/': { type: 'dir', children: {
       'home': { type: 'dir', children: {
         'rainier': { type: 'dir', children: {
-          'about': { type: 'file', content: function () { return 'Hi! I\'m Rainier, a high school student passionate about technology, science, and innovation. I enjoy creating projects that solve real-world problems.'; } },
-          'contact': { type: 'file', content: function () { return 'GitHub:       https://github.com/Rainier-PS\nInstagram:    https://instagram.com/rainier_ps\nInstructables: https://www.instructables.com/member/Rainier-PS/\nLocation:     Semarang, Indonesia'; } },
-          'experience': { type: 'file', content: function () { return 'Garuda Hacks 7.0 Volunteer\nHack Club Member\nClub Leader - Hack Club Binus School Semarang\nHack the Hat Elective Member (Raspberry Pi & Sense HAT)\nSTEM Club Member\nDigital Journalism Elective Member\nRevoU SECC - Coding Camp'; } },
-          'projects': { type: 'dir', content: 'projects listing', children: {} },
-          'publications': { type: 'dir', content: 'publications listing', children: {} },
+          'about': { type: 'dir', children: {
+            'bio.txt': { type: 'file', content: function () { return 'Hi! I\'m Rainier, a high school student passionate about technology, science, and innovation. I enjoy creating projects that solve real-world problems while constantly exploring new ideas and learning new skills, whether through STEM competitions or personal projects.'; } },
+            'education.txt': { type: 'file', content: function () { return 'Binus School Semarang — High School (2024 - Present)\nDaniel Creative School — Junior High School (2021 - 2024)\nDaniel Creative School — Elementary (2015 - 2021)'; } },
+            'links.txt': { type: 'file', content: function () { return 'Website:   https://rainier-ps.github.io\nGitHub:    https://github.com/Rainier-PS\nLinkedIn:  https://www.linkedin.com/in/rainierps'; } }
+          } },
+          'contact': { type: 'dir', children: {
+            'github.txt': { type: 'file', content: function () { return 'https://github.com/Rainier-PS'; } },
+            'linkedin.txt': { type: 'file', content: function () { return 'https://www.linkedin.com/in/rainierps'; } },
+            'instagram.txt': { type: 'file', content: function () { return 'https://instagram.com/rainier_ps'; } },
+            'instructables.txt': { type: 'file', content: function () { return 'https://www.instructables.com/member/Rainier-PS/'; } },
+            'location.txt': { type: 'file', content: function () { return 'Semarang, Indonesia'; } }
+          } },
+          'experience': { type: 'dir', children: {
+            'garuda-hacks.txt': { type: 'file', content: function () { return 'Garuda Hacks 7.0 Volunteer\nhttps://www.garudahacks.com/'; } },
+            'hack-club.txt': { type: 'file', content: function () { return 'Hack Club Member\nhttps://hackclub.com'; } },
+            'hack-club-bss.txt': { type: 'file', content: function () { return 'Club Leader — Hack Club Binus School Semarang\nhttps://hackclubbss.github.io'; } },
+            'hack-the-hat.txt': { type: 'file', content: function () { return 'Hack the Hat Elective Member (Raspberry Pi & Sense HAT)'; } },
+            'stem-club.txt': { type: 'file', content: function () { return 'STEM Club Member'; } },
+            'digital-journalism.txt': { type: 'file', content: function () { return 'Digital Journalism Elective Member'; } },
+            'revoU-secc.txt': { type: 'file', content: function () { return 'RevoU SECC — Coding Camp'; } }
+          } },
+          'projects': { type: 'dir', children: {
+            'invitation-website-template.txt': { type: 'file', content: function () { return 'Invitation Website Template\nA free, modern, and responsive invitation website template built with HTML, CSS, and vanilla JavaScript.\nDemo:  https://rainier-ps.github.io/Invitation-Template/\nRepo:  https://github.com/Rainier-PS/Invitation-Template'; } },
+            'diy-bluetooth-mechanical-keyboard.txt': { type: 'file', content: function () { return 'DIY Bluetooth Mechanical Keyboard\nCustom-designed Bluetooth mechanical keyboard with hot-swappable switches, USB-C, slide potentiometer, NFC, and 6-degree ergonomic tilt.\nRepo:  https://github.com/Rainier-PS/DIY-Bluetooth-Mechanical-Keyboard'; } },
+            'hackpad.txt': { type: 'file', content: function () { return 'Hackpad\nA DIY custom macropad built using a Xiao RP2040 for Hack Club Highway to Undercity.\nRepo:  https://github.com/Rainier-PS/Hackpad-Rainier'; } },
+            'dogface-pcb-art-keychain.txt': { type: 'file', content: function () { return 'DogFace PCB Art Keychain\nA dog-shaped interactive PCB art keychain with LEDs, buttons, vibration motor, and custom outline made with KiCad.\nRepo:  https://github.com/Rainier-PS/DogFace-PCB-Art'; } },
+            'smart-light-based-canopy-system.txt': { type: 'file', content: function () { return 'Smart Light-Based Canopy System\nAn eco-friendly smart home prototype using an LDR and Arduino Uno.\nDemo:  https://rainier-ps.github.io/Light-Based-Canopy-System/\nRepo:  https://github.com/Rainier-PS/Light-Based-Canopy-System'; } },
+            'smart-wifi-fish-feeder.txt': { type: 'file', content: function () { return 'Smart WiFi Fish Feeder\nA smart WiFi controlled fish feeder built using an ESP32 and SG90 servo.\nRepo:  https://github.com/Rainier-PS/Smart-WiFi-Fish-Feeder'; } },
+            'soundtune.txt': { type: 'file', content: function () { return 'SoundTune\nAn Android app that automatically adjusts media volume based on ambient noise levels.\nRepo:  https://github.com/Rainier-PS/SoundTune'; } }
+          } },
+          'publications': { type: 'dir', children: {
+            'smart-wifi-fish-feeder.txt': { type: 'file', content: function () { return 'Smart WiFi Fish Feeder\nA DIY automated fish feeder controlled via WiFi using an ESP32 and Telegram integration.\nhttps://www.instructables.com/Smart-WiFi-Fish-Feeder/'; } },
+            'esp32-countdown-timer.txt': { type: 'file', content: function () { return 'ESP32 WiFi New Year Countdown Timer\nBuild a synchronized countdown timer using ESP32 that fetches precise time from the internet.\nhttps://www.instructables.com/ESP32-WiFi-New-Year-Countdown-Timer-Beginner-Frien/'; } },
+            'arduino-guide-part1.txt': { type: 'file', content: function () { return "Beginner's Guide to Arduino - Part 1\nLearning Arduino basics and electronics concepts without needing a physical board (Simulation).\nhttps://www.instructables.com/Beginners-Guide-to-Arduino-Part-1-Learning-Arduino/"; } },
+            'arduino-guide-part2.txt': { type: 'file', content: function () { return "Beginner's Guide to Arduino - Part 2\nBuilding your first real circuits and understanding breadboards and basic components.\nhttps://www.instructables.com/Beginners-Guide-to-Arduino-Part-2-Building-Your-Fi/"; } },
+            'arduino-guide-part3.txt': { type: 'file', content: function () { return "Beginner's Guide to Arduino - Part 3\nExploring sensors, serial communication, and more advanced interaction techniques.\nhttps://www.instructables.com/Beginners-Guide-to-Arduino-Part-3-Sensors-Communic/"; } }
+          } },
           'skills': { type: 'dir', children: {
-            'programming': { type: 'file', content: function () { return 'Python, JavaScript (ES6+), SQL, Arduino (C/C++), HTML, CSS'; } },
-            '3d-printing': { type: 'file', content: function () { return 'Fusion 360 for 3D modeling, KiCad for PCB design, hands-on soldering'; } },
-            'languages': { type: 'file', content: function () { return 'English (Fluent), Chinese (Learning), German (Learning), Indonesian (Native)'; } },
-            'maths-science': { type: 'file', content: function () { return 'Strong foundation in mathematics and science applied to problem-solving, experiments, research, and technical projects.'; } }
+            'programming.txt': { type: 'file', content: function () { return 'Python, JavaScript (ES6+), SQL, Arduino (C/C++), HTML, CSS'; } },
+            '3d-printing.txt': { type: 'file', content: function () { return 'Fusion 360 for 3D modeling, KiCad for PCB design, hands-on soldering'; } },
+            'languages.txt': { type: 'file', content: function () { return 'English (Fluent), Chinese (Learning), German (Learning), Indonesian (Native)'; } },
+            'maths-science.txt': { type: 'file', content: function () { return 'Strong foundation in mathematics and science applied to problem-solving, experiments, research, and technical projects.'; } }
           } }
         } }
       } },
