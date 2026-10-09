@@ -3,44 +3,43 @@
   
   <url>
     <loc>https://rainier-ps.github.io/</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-10-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   
   <url>
     <loc>https://rainier-ps.github.io/projects.html</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-10-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://rainier-ps.github.io/publications.html</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-10-09</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://rainier-ps.github.io/awards.html</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-10-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://rainier-ps.github.io/labs.html</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-10-09</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://rainier-ps.github.io/terminal.html</loc>
-    <lastmod>2025-01-05</lastmod>
+    <lastmod>2026-10-09</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
 </urlset>
-

@@ -28,7 +28,7 @@
   },
   {
     "title": "DogFace PCB Art Keychain",
-    "description": "A dog-shaped interactive PCB art keychain with LEDs, buttons, a vibration motor, and a custom outline — made with KiCad.",
+    "description": "A dog-shaped interactive PCB art keychain with LEDs, buttons, a vibration motor, and a custom outline - made with KiCad.",
     "image": "https://raw.githubusercontent.com/Rainier-PS/DogFace-PCB-Art/refs/heads/main/images/3D%20Model.avif",
     "tags": ["Hardware", "PCB", "Mechanical"],
     "demo": "https://github.com/Rainier-PS/DogFace-PCB-Art",

@@ -24,6 +24,7 @@
     let sourceData = null;
     let baseImageCanvas = document.createElement("canvas");
     let customObjectUrl = null;
+    let needsRedraw = true;
 
     let currentRandomEffect = 'linear';
     let lastRandomSwitch = 0;
@@ -95,10 +96,18 @@
                 bctx.fill();
             }
         }
+
+        needsRedraw = true;
     }
 
     function drawLoop(timestamp) {
         if (!canvas.isConnected) return;
+
+        if (config.animType === 'none' && !needsRedraw) {
+            requestAnimationFrame(drawLoop);
+            return;
+        }
+        needsRedraw = false;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(baseImageCanvas, 0, 0);
@@ -274,6 +283,7 @@
     const animSelect = document.getElementById("px-anim-type");
     if (animSelect) animSelect.addEventListener("change", (e) => {
         config.animType = e.target.value;
+        needsRedraw = true;
     });
 
     document.querySelectorAll(".px-shape-option").forEach(opt => {

@@ -10,8 +10,37 @@
   var cwd = HOME;
   var history = [];
   var historyIndex = -1;
-  var commandBuffer = '';
-  var tabIndex = 0;
+  var prevCwd = HOME;
+  var ENV = {
+    USER: USER,
+    HOME: HOME,
+    HOSTNAME: HOST,
+    PWD: cwd,
+    SHELL: '/bin/bash',
+    TERM: 'xterm-256color',
+    MOTION: 'on'
+  };
+
+  function currentMotion() {
+    try { return localStorage.getItem('motion') === 'off' ? 'off' : 'on'; } catch (e) { return 'on'; }
+  }
+
+  function applyMotion(value, persist) {
+    ENV.MOTION = value;
+    document.documentElement.dataset.motion = value;
+    if (persist) {
+      try { localStorage.setItem('motion', value); } catch (e) { }
+    }
+  }
+
+  ENV.MOTION = currentMotion();
+  document.documentElement.dataset.motion = ENV.MOTION;
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'motion' && e.newValue) {
+      applyMotion(e.newValue === 'off' ? 'off' : 'on', false);
+    }
+  });
 
   var VIRTUAL_FS = {
     '/': { type: 'dir', children: {
@@ -19,7 +48,7 @@
         'rainier': { type: 'dir', children: {
           'about': { type: 'dir', children: {
             'bio.txt': { type: 'file', content: function () { return 'Hi! I\'m Rainier, a high school student passionate about technology, science, and innovation. I enjoy creating projects that solve real-world problems while constantly exploring new ideas and learning new skills, whether through STEM competitions or personal projects.'; } },
-            'education.txt': { type: 'file', content: function () { return 'Binus School Semarang — High School (2024 - Present)\nDaniel Creative School — Junior High School (2021 - 2024)\nDaniel Creative School — Elementary (2015 - 2021)'; } },
+            'education.txt': { type: 'file', content: function () { return 'Binus School Semarang - High School (2024 - Present)\nDaniel Creative School - Junior High School (2021 - 2024)\nDaniel Creative School - Elementary (2015 - 2021)'; } },
             'links.txt': { type: 'file', content: function () { return 'Website:   https://rainier-ps.github.io\nGitHub:    https://github.com/Rainier-PS\nLinkedIn:  https://www.linkedin.com/in/rainierps'; } }
           } },
           'contact': { type: 'dir', children: {
@@ -32,11 +61,11 @@
           'experience': { type: 'dir', children: {
             'garuda-hacks.txt': { type: 'file', content: function () { return 'Garuda Hacks 7.0 Volunteer\nhttps://www.garudahacks.com/'; } },
             'hack-club.txt': { type: 'file', content: function () { return 'Hack Club Member\nhttps://hackclub.com'; } },
-            'hack-club-bss.txt': { type: 'file', content: function () { return 'Club Leader — Hack Club Binus School Semarang\nhttps://hackclubbss.github.io'; } },
+            'hack-club-bss.txt': { type: 'file', content: function () { return 'Club Leader - Hack Club Binus School Semarang\nhttps://hackclubbss.github.io'; } },
             'hack-the-hat.txt': { type: 'file', content: function () { return 'Hack the Hat Elective Member (Raspberry Pi & Sense HAT)'; } },
             'stem-club.txt': { type: 'file', content: function () { return 'STEM Club Member'; } },
             'digital-journalism.txt': { type: 'file', content: function () { return 'Digital Journalism Elective Member'; } },
-            'revoU-secc.txt': { type: 'file', content: function () { return 'RevoU SECC — Coding Camp'; } }
+            'revoU-secc.txt': { type: 'file', content: function () { return 'RevoU SECC - Coding Camp'; } }
           } },
           'projects': { type: 'dir', children: {
             'invitation-website-template.txt': { type: 'file', content: function () { return 'Invitation Website Template\nA free, modern, and responsive invitation website template built with HTML, CSS, and vanilla JavaScript.\nDemo:  https://rainier-ps.github.io/Invitation-Template/\nRepo:  https://github.com/Rainier-PS/Invitation-Template'; } },
@@ -188,11 +217,13 @@
     return items;
   }
 
-  function getCompletionMatches(prefix) {
-    if (!prefix) return [];
-    var lastPart = prefix.split(/[\\s/]/g).pop();
-    var dirPart = prefix.lastIndexOf('/') !== -1 ? prefix.slice(0, prefix.lastIndexOf('/') + 1) : '';
-    var searchPath = dirPart || '.';
+  function getCompletionMatches(input) {
+    if (!input) return [];
+    var lastSpace = input.lastIndexOf(' ');
+    var token = lastSpace === -1 ? input : input.slice(lastSpace + 1);
+    var tokenDir = token.lastIndexOf('/') !== -1 ? token.slice(0, token.lastIndexOf('/') + 1) : '';
+    var lastPart = token.slice(tokenDir.length);
+    var searchPath = tokenDir || '.';
 
     var resolved;
     if (searchPath.startsWith('/')) {
@@ -206,7 +237,7 @@
     var matches = [];
     for (var i = 0; i < entries.length; i++) {
       if (entries[i].indexOf(lastPart) === 0) {
-        var fullPath = dirPart + entries[i];
+        var fullPath = tokenDir + entries[i];
         var info = getNode(fullPath);
         if (info && info.node && info.node.type === 'dir') {
           matches.push(fullPath + '/');
@@ -226,8 +257,9 @@
     var general = [
       ['help', 'Show this help message'],
       ['clear', 'Clear the terminal screen'],
-      ['history', 'Show command history'],
-      ['exit', 'Return to the main site']
+      ['history', 'Show command history (history -c clears)'],
+      ['exit', 'Return to the main site'],
+      ['Arrow Up / Down', 'Previous / next command']
     ];
     general.forEach(function (c) {
       html += '<div class="help-row"><span class="help-command">' + c[0] + '</span><span class="help-desc">' + c[1] + '</span></div>';
@@ -235,9 +267,16 @@
     html += '<div class="help-section">File System</div>';
     var fsCmds = [
       ['ls', 'List directory contents'],
-      ['cd', 'Change directory'],
+      ['cd', 'Change directory (cd - goes back one step)'],
       ['pwd', 'Print working directory'],
-      ['cat', 'Display file contents']
+      ['cat', 'Display file contents'],
+      ['grep', 'Search for lines in a file'],
+      ['head / tail', 'First or last lines of a file'],
+      ['wc', 'Count lines, words and characters'],
+      ['sort', 'Sort the lines of a file'],
+      ['mkdir', 'Create a directory'],
+      ['touch', 'Create an empty file'],
+      ['rm', 'Remove a file (rm -r for directories)']
     ];
     fsCmds.forEach(function (c) {
       html += '<div class="help-row"><span class="help-command">' + c[0] + '</span><span class="help-desc">' + c[1] + '</span></div>';
@@ -247,10 +286,25 @@
       ['date', 'Show current date and time'],
       ['whoami', 'Display current user'],
       ['uname', 'Print system information'],
-      ['echo', 'Display a line of text'],
-      ['who', 'Show who is logged in']
+      ['echo', 'Display text ($VAR expands)'],
+      ['who', 'Show who is logged in'],
+      ['man', 'Show a manual page'],
+      ['which', 'Locate a command'],
+      ['ps / df / free', 'Process, disk and memory info'],
+      ['uptime / hostname / id', 'System details'],
+      ['fastfetch', 'Show a system overview'],
+      ['sudo', 'Run a command as root']
     ];
     sysCmds.forEach(function (c) {
+      html += '<div class="help-row"><span class="help-command">' + c[0] + '</span><span class="help-desc">' + c[1] + '</span></div>';
+    });
+    html += '<div class="help-section">Environment</div>';
+    var envCmds = [
+      ['export NAME=VALUE', 'Set a variable (export MOTION=off)'],
+      ['env / printenv', 'List environment variables'],
+      ['unset NAME', 'Remove a variable']
+    ];
+    envCmds.forEach(function (c) {
       html += '<div class="help-row"><span class="help-command">' + c[0] + '</span><span class="help-desc">' + c[1] + '</span></div>';
     });
     html += '<div class="help-section">Portfolio</div>';
@@ -270,12 +324,11 @@
   };
 
   commands.echo = function (args) {
-    var str = args.join(' ');
-    if (str.indexOf('$USER') !== -1) str = str.replace(/\$USER/g, USER);
-    if (str.indexOf('$HOSTNAME') !== -1) str = str.replace(/\$HOSTNAME/g, HOST);
-    if (str.indexOf('$HOME') !== -1) str = str.replace(/\$HOME/g, HOME);
-    if (str.indexOf('$PWD') !== -1) str = str.replace(/\$PWD/g, cwd);
-    return str;
+    return args.join(' ').replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, function (match, name) {
+      if (name === 'PWD') return cwd;
+      if (Object.prototype.hasOwnProperty.call(ENV, name)) return ENV[name];
+      return match;
+    });
   };
 
   commands.date = function () {
@@ -360,8 +413,19 @@
   commands.cd = function (args) {
     var target = args[0];
     if (!target || target === '~' || target === '') {
+      prevCwd = cwd;
       cwd = HOME;
+      ENV.PWD = cwd;
       return '';
+    }
+
+    if (target === '-') {
+      if (!prevCwd) return '';
+      var back = prevCwd;
+      prevCwd = cwd;
+      cwd = back;
+      ENV.PWD = cwd;
+      return cwd;
     }
 
     var resolved;
@@ -381,8 +445,10 @@
       return 'cd: ' + target + ': Not a directory';
     }
 
+    prevCwd = cwd;
     cwd = resolved.path;
     if (cwd === '') cwd = '/';
+    ENV.PWD = cwd;
     return '';
   };
 
@@ -423,7 +489,8 @@
     return '';
   };
 
-  commands.history = function () {
+  commands.history = function (args) {
+    if (args[0] === '-c') { history.length = 0; historyIndex = 0; return ''; }
     if (history.length === 0) return 'No commands in history.';
     return history.map(function (cmd, i) { return '  ' + (i + 1) + '  ' + cmd; }).join('\r\n');
   };
@@ -440,6 +507,259 @@
     return USER + ' pts/1        ' + dateStr + ' ' + timeStr + ' (terminal)';
   };
 
+  commands.hostname = function () { return HOST; };
+
+  commands.id = function () { return 'uid=1000(' + USER + ') gid=1000(' + USER + ') groups=1000(' + USER + '),27(sudo),44(video)'; };
+
+  commands.uptime = function () {
+    var now = new Date();
+    return ' ' + now.toTimeString().slice(0, 8) + ' up 3 days,  2:14,  1 user,  load average: 0.42, 0.31, 0.28';
+  };
+
+  commands.free = function () {
+    return '               total        used        free      shared  buff/cache   available\n' +
+           'Mem:            7862        2341        3120         212        2401        5108\n' +
+           'Swap:           2047           0        2047';
+  };
+
+  commands.df = function () {
+    return 'Filesystem      Size  Used Avail Use% Mounted on\n' +
+           '/dev/vda1        40G  6.2G   32G  17% /\n' +
+           'tmpfs           3.9G     0  3.9G   0% /dev/shm';
+  };
+
+  commands.ps = function () {
+    return '    PID TTY          TIME CMD\n' +
+           '   1024 pts/0    00:00:00 bash\n' +
+           '   2048 pts/0    00:00:00 ps';
+  };
+
+  commands.sudo = function () {
+    print(USER + ' is not in the sudoers file. This incident will be reported.', 'error');
+    return '';
+  };
+
+  commands.which = function (args) {
+    if (!args.length) return '';
+    return args.map(function (name) {
+      return commands[name] ? '/usr/bin/' + name : name + ' not found';
+    }).join('\n');
+  };
+
+  commands.fastfetch = function () {
+    return USER + '@' + HOST + '\n' +
+      '-----------\n' +
+      'OS: portfolio linux 6.1.0 x86_64\n' +
+      'Shell: bash 5.1.16\n' +
+      'Terminal: web-term\n' +
+      'CPU: Virtual @ 3.20GHz\n' +
+      'Memory: 2341MiB / 7862MiB\n' +
+      'Uptime: 3 days, 2 hours, 14 mins';
+  };
+
+  commands.neofetch = function () { return commands.fastfetch(); };
+
+  function readFileFor(cmd, target) {
+    var resolved;
+    if (target.startsWith('/')) resolved = getNode(target);
+    else resolved = getNode(cwd + '/' + target);
+    if (!resolved) { print(cmd + ': ' + target + ': No such file or directory', 'error'); return null; }
+    if (resolved.node.type === 'dir') { print(cmd + ': ' + target + ': Is a directory', 'error'); return null; }
+    return resolved.node.content().split('\n');
+  }
+
+  commands.grep = function (args) {
+    var ignoreCase = false;
+    var pattern = null;
+    var files = [];
+    args.forEach(function (a) {
+      if (a === '-i') ignoreCase = true;
+      else if (pattern === null) pattern = a;
+      else files.push(a);
+    });
+    if (pattern === null) return 'Usage: grep [-i] PATTERN FILE...';
+    if (!files.length) return 'grep: missing file operand';
+    var out = [];
+    files.forEach(function (f) {
+      var lines = readFileFor('grep', f);
+      if (!lines) return;
+      var needle = ignoreCase ? pattern.toLowerCase() : pattern;
+      lines.forEach(function (line) {
+        var hay = ignoreCase ? line.toLowerCase() : line;
+        if (hay.indexOf(needle) !== -1) out.push(line);
+      });
+    });
+    return out.join('\n');
+  };
+
+  function headTail(cmd, args, fromTop) {
+    var n = 10;
+    var file = null;
+    for (var i = 0; i < args.length; i++) {
+      if (args[i] === '-n' && args[i + 1]) { n = parseInt(args[++i], 10) || 10; }
+      else if (args[i].charAt(0) === '-' && !isNaN(parseInt(args[i].slice(1), 10))) { n = parseInt(args[i].slice(1), 10); }
+      else file = args[i];
+    }
+    if (!file) return 'Usage: ' + cmd + ' [-n COUNT] FILE';
+    var lines = readFileFor(cmd, file);
+    if (!lines) return '';
+    return (fromTop ? lines.slice(0, n) : lines.slice(-n)).join('\n');
+  }
+
+  commands.head = function (args) { return headTail('head', args, true); };
+
+  commands.tail = function (args) { return headTail('tail', args, false); };
+
+  commands.wc = function (args) {
+    var file = null;
+    for (var i = 0; i < args.length; i++) { if (args[i].charAt(0) !== '-') file = args[i]; }
+    if (!file) return 'Usage: wc FILE';
+    var lines = readFileFor('wc', file);
+    if (!lines) return '';
+    var text = lines.join('\n');
+    var words = text.split(/\s+/).filter(Boolean).length;
+    return String(lines.length).padStart(7) + String(words).padStart(8) + String(text.length).padStart(8) + ' ' + file;
+  };
+
+  commands.sort = function (args) {
+    var file = null;
+    args.forEach(function (a) { if (a.charAt(0) !== '-') file = a; });
+    if (!file) return 'Usage: sort FILE';
+    var lines = readFileFor('sort', file);
+    if (!lines) return '';
+    return lines.slice().sort().join('\n');
+  };
+
+  function parentOf(absPath) {
+    var idx = absPath.lastIndexOf('/');
+    return idx <= 0 ? '/' : absPath.slice(0, idx);
+  }
+
+  function resolveUserPath(t) {
+    return t.startsWith('/') ? resolvePath(t) : resolvePath(cwd + '/' + t);
+  }
+
+  commands.mkdir = function (args) {
+    var targets = args.filter(function (a) { return a.charAt(0) !== '-'; });
+    if (!targets.length) return 'mkdir: missing operand';
+    var errors = [];
+    targets.forEach(function (t) {
+      var abs = resolveUserPath(t);
+      if (getNode(abs)) { errors.push("mkdir: cannot create directory '" + t + "': File exists"); return; }
+      var parent = getNode(parentOf(abs));
+      if (!parent || parent.node.type !== 'dir') { errors.push("mkdir: cannot create directory '" + t + "': No such file or directory"); return; }
+      parent.node.children[abs.split('/').pop()] = { type: 'dir', children: {} };
+    });
+    if (errors.length) print(errors.join('\n'), 'error');
+    return '';
+  };
+
+  commands.touch = function (args) {
+    var targets = args.filter(function (a) { return a.charAt(0) !== '-'; });
+    if (!targets.length) return 'touch: missing file operand';
+    var errors = [];
+    targets.forEach(function (t) {
+      var abs = resolveUserPath(t);
+      if (getNode(abs)) return;
+      var parent = getNode(parentOf(abs));
+      if (!parent || parent.node.type !== 'dir') { errors.push("touch: cannot touch '" + t + "': No such file or directory"); return; }
+      parent.node.children[abs.split('/').pop()] = { type: 'file', content: function () { return ''; } };
+    });
+    if (errors.length) print(errors.join('\n'), 'error');
+    return '';
+  };
+
+  commands.rm = function (args) {
+    var recursive = false;
+    var force = false;
+    var targets = [];
+    args.forEach(function (a) {
+      if (a === '-r' || a === '-R' || a === '-rf' || a === '-fr') { recursive = true; if (a.length > 2) force = true; }
+      else if (a === '-f') { force = true; }
+      else targets.push(a);
+    });
+    if (!targets.length) return 'rm: missing operand';
+    var errors = [];
+    targets.forEach(function (t) {
+      var abs = resolveUserPath(t);
+      if (abs === '/') { errors.push("rm: it is dangerous to operate recursively on '/'"); return; }
+      var info = getNode(abs);
+      if (!info || !info.parent) { if (!force) errors.push("rm: cannot remove '" + t + "': No such file or directory"); return; }
+      if (info.node.type === 'dir' && !recursive) { errors.push("rm: cannot remove '" + t + "': Is a directory"); return; }
+      delete info.parent.children[info.name];
+    });
+    if (errors.length) print(errors.join('\n'), 'error');
+    return '';
+  };
+
+  var MANUALS = {
+    ls: 'ls - list directory contents\n\nSYNOPSIS\n       ls [-a] [-l] [FILE]\n\nDESCRIPTION\n       List information about files in the current directory.',
+    cd: 'cd - change the shell working directory\n\nSYNOPSIS\n       cd [DIR]\n\nDESCRIPTION\n       Change directory to DIR. cd - returns to the previous directory.',
+    cat: 'cat - concatenate files and print on the standard output\n\nSYNOPSIS\n       cat FILE...\n\nDESCRIPTION\n       Display the contents of each given FILE.',
+    grep: 'grep - print lines matching a pattern\n\nSYNOPSIS\n       grep [-i] PATTERN FILE...\n\nDESCRIPTION\n       Search FILEs for lines containing PATTERN. -i ignores case.',
+    export: 'export - set an environment variable\n\nSYNOPSIS\n       export NAME=VALUE\n\nDESCRIPTION\n       Create or update a variable. export MOTION=off turns animations off for the whole site and remembers it.',
+    MOTION: 'MOTION - animation environment variable\n\nVALUES\n       on | off\n\nDESCRIPTION\n       Controls site animations. Set with export MOTION=off, read with printenv MOTION, reset with unset MOTION. The settings panel (Ctrl + ,) on site pages controls the same preference.',
+    history: 'history - display the command history\n\nSYNOPSIS\n       history [-c]\n\nDESCRIPTION\n       List past commands with numbers. -c clears the list.',
+    rm: 'rm - remove files or directories\n\nSYNOPSIS\n       rm [-r] FILE...\n\nDESCRIPTION\n       Remove file entries. Removing a directory requires -r.',
+    mkdir: 'mkdir - make directories\n\nSYNOPSIS\n       mkdir DIR...\n\nDESCRIPTION\n       Create each DIR. Fails when it already exists.',
+    touch: 'touch - update file timestamps\n\nSYNOPSIS\n       touch FILE...\n\nDESCRIPTION\n       Create empty FILEs when they do not exist.'
+  };
+
+  commands.man = function (args) {
+    if (!args.length) return 'What manual page do you want?';
+    var page = MANUALS[args[0]];
+    if (!page) return 'No manual entry for ' + args[0];
+    return page;
+  };
+
+  commands.export = function (args) {
+    if (!args.length) {
+      return Object.keys(ENV).map(function (k) {
+        return 'declare -x ' + k + '="' + (k === 'PWD' ? cwd : ENV[k]) + '"';
+      }).join('\n');
+    }
+    var errors = [];
+    args.forEach(function (a) {
+      var eq = a.indexOf('=');
+      if (eq === -1) { errors.push('bash: export: `' + a + "': not a valid identifier"); return; }
+      var name = a.slice(0, eq);
+      var value = a.slice(eq + 1);
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) { errors.push('bash: export: `' + name + "': not a valid identifier"); return; }
+      if (name === 'MOTION') {
+        if (value === 'on' || value === 'off') applyMotion(value, true);
+        else errors.push('bash: export: MOTION: must be on or off');
+        return;
+      }
+      ENV[name] = value;
+    });
+    if (errors.length) print(errors.join('\n'), 'error');
+    return '';
+  };
+
+  commands.env = function () { return commands.printenv([]); };
+
+  commands.printenv = function (args) {
+    if (args[0]) {
+      var value = args[0] === 'PWD' ? cwd : ENV[args[0]];
+      return value === undefined ? '' : String(value);
+    }
+    return Object.keys(ENV).map(function (k) {
+      return k + '=' + (k === 'PWD' ? cwd : ENV[k]);
+    }).join('\n');
+  };
+
+  commands.unset = function (args) {
+    args.forEach(function (a) {
+      if (a === 'MOTION') {
+        try { localStorage.removeItem('motion'); } catch (e) { }
+        applyMotion('on', false);
+        return;
+      }
+      if (a !== 'USER' && a !== 'HOME' && ENV.hasOwnProperty(a)) delete ENV[a];
+    });
+    return '';
+  };
+
   function motd() {
     var now = new Date();
     var dateStr = now.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/,/g, '');
@@ -447,8 +767,9 @@
     printHtml('<span class="motd-line">Linux 6.1.0 on x86_64</span>');
     printHtml('<span class="motd-line info">' + dateStr + '</span>');
     printHtml('<span class="motd-line">&nbsp;</span>');
-    printHtml('<span class="motd-line info">Type <span style="color:#569cd6">help</span> for available commands</span>');
-    printHtml('<span class="motd-line info">Type <span style="color:#569cd6">ls</span> to browse the virtual filesystem</span>');
+    printHtml('<span class="motd-line info">Type <span class="motd-cmd">help</span> for available commands</span>');
+    printHtml('<span class="motd-line info">Type <span class="motd-cmd">ls</span> to browse the virtual filesystem</span>');
+    printHtml('<span class="motd-line info">Animations: <span class="motd-cmd">export MOTION=off</span> (syncs with the site)</span>');
     printHtml('<span class="motd-line">&nbsp;</span>');
   }
 
@@ -484,6 +805,15 @@
     }
   }
 
+  function stepHistory(delta) {
+    if (history.length === 0) return;
+    var next = historyIndex + delta;
+    if (next < 0) next = 0;
+    if (next > history.length) next = history.length;
+    historyIndex = next;
+    input.value = historyIndex === history.length ? '' : history[historyIndex];
+  }
+
   function handleKeydown(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -498,30 +828,29 @@
       autoScroll();
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (history.length === 0) return;
-      if (historyIndex > 0) historyIndex--;
-      else if (historyIndex === history.length) historyIndex = history.length - 1;
-      input.value = history[historyIndex] || '';
+      stepHistory(-1);
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (historyIndex < history.length - 1) {
-        historyIndex++;
-        input.value = history[historyIndex] || '';
-      } else {
-        historyIndex = history.length;
-        input.value = '';
-      }
+      stepHistory(1);
     } else if (e.key === 'Tab') {
       e.preventDefault();
       var val = input.value;
       if (!val.trim()) return;
+      if (val.indexOf(' ') === -1) {
+        var cmdMatches = Object.keys(commands).filter(function (name) { return name.indexOf(val) === 0; });
+        if (cmdMatches.length === 1) {
+          input.value = cmdMatches[0] + ' ';
+        } else if (cmdMatches.length > 1) {
+          print(cmdMatches.join('  '));
+          showPrompt();
+        }
+        return;
+      }
       var matches = getCompletionMatches(val);
       if (matches.length === 1) {
-        var match = matches[0];
-        var prefix = val.split(/[\\s/]/g).slice(0, -1).join(' ');
-        var lastSlash = val.lastIndexOf('/');
-        var dirPart = lastSlash !== -1 ? val.slice(0, lastSlash + 1) : '';
-        input.value = prefix + (prefix ? ' ' : '') + dirPart + match.trim();
+        var lastSpace = val.lastIndexOf(' ');
+        var head = lastSpace === -1 ? '' : val.slice(0, lastSpace + 1);
+        input.value = head + matches[0];
       } else if (matches.length > 1) {
         print(matches.join('  '));
         showPrompt();

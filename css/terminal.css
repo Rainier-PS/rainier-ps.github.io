@@ -70,6 +70,10 @@ body.terminal-body .terminal {
     margin: 0;
 }
 
+.motd-cmd {
+    color: #569cd6;
+}
+
 .terminal-input-line {
   display: flex;
   align-items: center;
@@ -92,6 +96,12 @@ body.terminal-body .terminal {
     font-size: 16px;
     outline: none !important;
     box-shadow: none !important;
+}
+
+.terminal-input-line:focus-within {
+    outline: 1px solid var(--terminal-color);
+    outline-offset: 3px;
+    border-radius: 4px;
 }
 
 body.matrix-mode .terminal {

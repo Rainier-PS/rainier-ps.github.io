@@ -8,7 +8,7 @@
 
   <meta name="author" content="Rainier Pearson Saputra">
   <meta name="description"
-    content="Portfolio of Rainier Pearson Saputra — student, aspiring engineer, and tech enthusiast." />
+    content="Portfolio of Rainier Pearson Saputra, student, aspiring engineer, and tech enthusiast." />
   <link rel="canonical" href="https://rainier-ps.github.io/" />
 
   <meta property="og:title" content="Rainier Pearson Saputra" />
@@ -38,7 +38,7 @@
     content="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Pearson%20Saputra-Avatar.jpg" />
 
   <meta name="google-site-verification" content="KclOAJlsOojPDo-nzZw4U5gCyo-2dL3ZP09HrbI7NYk" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com; connect-src 'self' https://raw.githubusercontent.com https://github-contributions-api.jogruber.de; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com data:; connect-src 'self' https://raw.githubusercontent.com https://github-contributions-api.jogruber.de; base-uri 'self'; form-action 'self'" />
 
   <script type="application/ld+json">
   {
@@ -60,10 +60,8 @@
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
     rel="stylesheet" />
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
-  <script src="https://unpkg.com/lucide@0.562.0" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -88,10 +86,10 @@
   <nav id="navbar" role="navigation" aria-label="Main navigation" data-mobile="true">
     <div class="nav-inner">
       <a href="terminal.html" class="nav-logo" aria-label="Open Terminal">
-        <img class="logo logo-dark"
+        <img class="logo logo-dark" width="30" height="30"
           src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Primary.svg"
           alt="Rainier Logo" />
-        <img class="logo logo-light"
+        <img class="logo logo-light" width="30" height="30"
           src="https://raw.githubusercontent.com/Rainier-PS/rainier-ps.github.io/main/images/site/Rainier%20Logo-Reversed.svg"
           alt="Rainier Logo" />
       </a>
@@ -107,6 +105,19 @@
         <li><a href="#contact">Contact</a></li>
       </ul>
       <div class="nav-right">
+        <button class="theme-toggle motion-toggle" id="motionToggle" aria-label="Toggle animations" aria-pressed="true">
+          <svg class="icon-motion-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M10 8.5l6 3.5-6 3.5z" />
+          </svg>
+          <svg class="icon-motion-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <line x1="10" y1="9" x2="10" y2="15" />
+            <line x1="14" y1="9" x2="14" y2="15" />
+          </svg>
+        </button>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -150,9 +161,9 @@
               real-world problems.
             </p>
             <div class="hero-links" id="heroLinks">
-              <button class="cta-btn btn-disabled" disabled aria-disabled="true" tabindex="-1" title="Resume coming soon">
+              <a class="cta-btn btn-disabled" id="heroResume" title="Resume coming soon">
                 <span>Resume (Coming Soon)</span>
-              </button>
+              </a>
               <a class="cta-btn cta-explore desktop-hidden" href="#about">
                 <span class="cta-text-wrap">
                   <span class="cta-text-default">Explore</span>
@@ -294,13 +305,13 @@
               <li><span class="exp-dot"></span><span><a href="https://www.garudahacks.com/" target="_blank" rel="noopener" class="inline-link">Garuda Hacks 7.0</a> Committee</span></li>
               <li><span class="exp-dot"></span><span><a href="https://hackclub.com" target="_blank" rel="noopener"
                     class="inline-link">Hack Club</a> Member</span></li>
-              <li><span class="exp-dot"></span><span>Founder & Co-Leader — <a href="https://hackclubbss.github.io"
+              <li><span class="exp-dot"></span><span>Founder & Co-Leader - <a href="https://hackclubbss.github.io"
                     target="_blank" rel="noopener" class="inline-link">Hack Club Binus School Semarang</a></span></li>
               <li><span class="exp-dot"></span><span>Hack the Hat Elective Member (Raspberry Pi &amp; Sense HAT)</span>
               </li>
               <li><span class="exp-dot"></span><span>STEM Club Member</span></li>
               <li><span class="exp-dot"></span><span>Digital Journalism Elective Member</span></li>
-              <li><span class="exp-dot"></span><span>RevoU SECC — Coding Camp</span></li>
+              <li><span class="exp-dot"></span><span>RevoU SECC - Coding Camp</span></li>
             </ul>
           </div>
           <div class="exp-edu-card">
@@ -392,7 +403,7 @@
             </div>
             <h3>Programming</h3>
             <p><strong>Python</strong>, <strong>JavaScript (ES6+)</strong>, <strong>SQL</strong>, <strong>Arduino
-                (C/C++)</strong>, <strong>HTML</strong>, and <strong>CSS</strong> — from scripting to web to embedded.
+                (C/C++)</strong>, <strong>HTML</strong>, and <strong>CSS</strong> - from scripting to web to embedded.
             </p>
           </div>
           <div class="skill-card">
@@ -427,7 +438,7 @@
           <p class="section-sub">A selection of things I've made</p>
         </div>
 
-        <div class="carousel" data-carousel aria-label="Projects carousel">
+        <div class="carousel" data-carousel role="group" aria-roledescription="carousel" tabindex="0" aria-label="Projects carousel">
           <div class="carousel-track" id="projects-grid" aria-live="polite"></div>
           <div class="carousel-dots-outer">
             <div class="carousel-dots" aria-label="Project slide pagination"></div>
@@ -455,7 +466,7 @@
           <p class="section-sub">Competitions and achievements I'm proud of</p>
         </div>
 
-        <div class="carousel" data-carousel aria-label="Awards carousel">
+        <div class="carousel" data-carousel role="group" aria-roledescription="carousel" tabindex="0" aria-label="Awards carousel">
           <div class="carousel-track" id="awards-grid" aria-live="polite"></div>
           <div class="carousel-dots-outer">
             <div class="carousel-dots" aria-label="Award slide pagination"></div>
@@ -480,7 +491,7 @@
         <div class="section-header reveal">
           <p class="section-label">Get In Touch</p>
           <h2 class="section-title" id="contactHeading">Contact</h2>
-          <p class="section-sub">Let's connect — reach me through any of the links below</p>
+          <p class="section-sub">Let's connect - reach me through any of the links below</p>
         </div>
 
         <div class="contact-grid reveal">
@@ -538,6 +549,15 @@
               </svg></span>
             <span class="contact-card-label">Semarang, Indonesia</span>
           </a>
+          <div class="contact-card resume-card" id="resumeLink" data-state="soon">
+            <span class="contact-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg></span>
+            <span class="contact-card-label">Resume (soon)</span>
+          </div>
         </div>
 
         <div class="back-to-top-wrap reveal">
@@ -578,7 +598,7 @@
 
   <div id="imageLightbox" class="image-lightbox">
     <div class="image-lightbox-content">
-      <img id="lightboxImg" src="" alt="Preview">
+      <img id="lightboxImg" alt="Preview">
       <div class="image-lightbox-buttons">
         <button id="closeLightbox">Close</button>
         <button id="openInNewTab">Open in New Tab</button>
